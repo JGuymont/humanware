@@ -102,3 +102,11 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+#marc's files downloaded on local
+train/
+train.tar.gz
+train_metadata.pkl
+
+#pycharm files
+.idea/
