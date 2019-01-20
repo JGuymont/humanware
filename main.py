@@ -9,23 +9,28 @@ import torch
 import torch.optim as optim
 from model import SimpleConvNet, ModelPaper
 import numpy as np
+from configparser import ConfigParser
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("device", device)
 
 class CNN:
-    def __init__(self, batch_size, model, lr=0.001, total_epochs=50):
-        self.epochs=total_epochs
-        self.epoch=0
-        self.lr =lr
-        self.batch_size = batch_size
+    def __init__(self, model):
+        conf = ConfigParser("{}.ini".format(model))
+
+        self.epochs = config.getint("epochs")
+        self.epoch = config.getint("epoch_start")
+        self.lr = config.getdouble("learning_rate")
+        self.batch_size = config.getint("batch_size")
 
         self.train_transforms = transforms.Compose([
             transforms.CenterCrop(64),
             transforms.RandomApply([
-            transforms.RandomAffine(degrees=10, shear=20),
-            transforms.ColorJitter(brightness=0.5, contrast=.5, saturation=.5),
-            transforms.RandomRotation(20),
+            transforms.RandomAffine(degrees=config.getint("randomAffine_degrees"), shear=config.getint("randomAffine_shear")),
+            transforms.ColorJitter(brightness=config.getint("colorJitter_brightness"),
+                                   contrast=config.getint("colorJitter_contrast"),
+                                   saturation=config.getint("colorJitter_saturation")),
+            transforms.RandomRotation(config.getint("randomRotation_degrees")),
             ], p=0.5),
             transforms.RandomResizedCrop(54),
             transforms.ToTensor(),
@@ -50,7 +55,9 @@ class CNN:
 
         self.criterion = nn.CrossEntropyLoss()
         self.model = eval(model)().to(device)
-        self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr, momentum=0.9, weight_decay=5e-4)
+        self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr,
+                                   momentum=config.getdouble("momentum"),
+                                   weight_decay=config.getdouble("weight_decay"))
 
     def train_model(self):
         for _ in tqdm(range(self.epochs)):
@@ -111,6 +118,5 @@ class CNN:
 
 
 if __name__ == '__main__':
-
-    trainer = CNN(32, model='ModelPaper', lr=0.001, total_epochs=150)
+    trainer = CNN('ModelPaper')
     trainer.train_model()
