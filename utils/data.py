@@ -4,35 +4,38 @@ import pandas as pd
 import pickle as pkl
 from skimage import io
 import numpy as np
+from PIL import Image
 
 
-class SVHN(Dataset):
-    def __init__(self, path, transform=None, root=None):
-        with open(path, 'rb') as f:
-            train_metadata = pkl.load(f)
+class SVHNDataset(Dataset):
 
-        self.train_df = pd.concat({k: pd.DataFrame.from_dict(v).T for k, v in train_metadata.items()})
+    def __init__(self, metadata_path, data_dir, transform=None, root=None):
+        
+        self._metadata = self._load_pickle(metadata_path)
+        self.filenames = [meta['filename'] for meta in self._metadata.values()] 
+        self._data_dir = data_dir
+        self.transform = transform
 
-        #leave the choice to other teams to have other dataframes so that they can analyze other parts of the data
-        self.train_df_filenames = self.train_df.iloc[::2, :1]
-        self.train_df_metadata = self.train_df.iloc[1::2, :]
-
-        self.transforms = transform
-
-    def __getitem__(self, idx):
-        img_name = 'train/' + self.train_df_filenames[idx, 0]
-        print(img_name)
-        height = self.train_df_metadata[idx, 0]
-        label = train_df_metadata[idx, 1]
-        left = train_df_metadata[idx, 2]
-        top = train_df_metadata[idx, 3]
-        width = train_df_metadata[idx, 4]
-
-        img = np.array(io.imread(img_name), dtype=np.uint8)
-        print(img)
-        img_labels = top #is that what we want to analyze?
-
-        return img, img_labels
+    def __getitem__(self, index):
+        img_name = '{}/{}.png'.format(self._data_dir, index+1)
+        meta = self._metadata[index]['metadata']
+        height = meta['height']
+        left = meta['left']
+        top = meta['top']
+        width = meta['width']
+        label = meta['label']
+        img = Image.open(img_name)
+        if self.transform:
+            img = self.transform(img)
+        else:
+            img = np.array(img)
+        n_digits = len(label) if len(label) <= 5 else 5
+        return img, n_digits
 
     def __len__(self):
-        return len(self.train_df_filenames)
+        return len(self.filenames)
+
+    def _load_pickle(self, path):
+        with open(path, 'rb') as f:
+            pickle_file = pkl.load(f)
+        return pickle_file
