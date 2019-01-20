@@ -71,9 +71,9 @@ if __name__ == '__main__':
         transform=test_transforms)
 
     
-    trainloader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True, num_workers=1, pin_memory=True)
-    devloader = DataLoader(valid_data, batch_size=100, num_workers=1, pin_memory=True)
-    testloader = DataLoader(test_data, batch_size=100, num_workers=1, pin_memory=True)
+    trainloader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=True)
+    devloader = DataLoader(valid_data, batch_size=100, num_workers=4, pin_memory=True)
+    testloader = DataLoader(test_data, batch_size=100, num_workers=4, pin_memory=True)
 
     if not os.path.isdir('results'):
         os.mkdir('results')
