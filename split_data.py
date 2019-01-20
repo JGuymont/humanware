@@ -4,6 +4,7 @@ Split metadata into train/valid/test
 
 import argparse
 import pickle
+import os
 
 def argparser():
     """
@@ -41,5 +42,7 @@ def main(args):
 
 if __name__ == '__main__':
     args = argparser()
+    if not os.path.isdir(args.metadata_dir):
+        os.mkdir(args.metadata_dir)
     main(args)
     
