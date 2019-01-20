@@ -37,6 +37,7 @@ class TrainSVHNDataset(Dataset):
         self.train_df_metadata_test = self.train_df_metadata[
                                       int((train_percent + val_percent) * len(self.train_df_metadata)):]
 
+        self.train_df_filenames_train.to_pickle("train_filenames.pkl")
         self.train_df_filenames_val.to_pickle("val_filenames.pkl")
         self.train_df_metadata_val.to_pickle('val_metadata.pkl')
 
