@@ -4,6 +4,7 @@ import torch
 import torch.optim as optim
 import numpy as np
 from models.cnn import ConvNet
+from models.model_paper import ModelPaper
 import pandas as pd
 
 class Trainer:
@@ -23,14 +24,12 @@ class Trainer:
 
     def train_model(self, trainloader, devloader):
         print(' [*] Starting training')
-        #for _ in tqdm(range(self.epochs)):
-        for _ in range(self.epochs):
+        for _ in tqdm(range(self.epochs)):
             self.run_epoch(trainloader, devloader)
 
     def run_epoch(self, trainloader, devloader):
         self.accuracies_train = []
-        #for x_batch, target_batch in tqdm(trainloader):
-        for x_batch, target_batch in trainloader:        
+        for x_batch, target_batch in tqdm(trainloader):      
             self.train_on_batch(x_batch.to(self.device), target_batch.to(self.device))
 
         total_accuracy_for_epoch = np.sum(self.accuracies_train) / len(trainloader)
@@ -62,8 +61,7 @@ class Trainer:
         print(' [*] Computing validation accuracy')
         self.accuracies_val = []
         with torch.no_grad():
-            #for x_batch, y_batch in tqdm(devloader):
-            for x_batch, y_batch in devloader:
+            for x_batch, y_batch in tqdm(devloader):
                 self.validation_batch(x_batch.to(self.device), y_batch.to(self.device))
 
         total_accuracy_for_epoch = np.sum(self.accuracies_val) / len(devloader)
