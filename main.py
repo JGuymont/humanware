@@ -9,11 +9,8 @@ import torch
 import torch.optim as optim
 from model import SimpleConvNet, ModelPaper
 import numpy as np
-<<<<<<< HEAD
 from configparser import ConfigParser
-=======
 import os
->>>>>>> master
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("device", device)
