@@ -14,7 +14,7 @@ class SVHNDataset(Dataset):
         self._crop_percent = crop_percent
         self._metadata = self._load_pickle(metadata_path)
         self._data_dir = data_dir
-        self.transform = transform
+        self._transform = transform
 
     def __getitem__(self, index):
         img_name = '{}/{}.png'.format(self._data_dir, index+1)
@@ -27,7 +27,7 @@ class SVHNDataset(Dataset):
         
         img = Image.open(img_name)
         img = self._crop(img, min_left, min_top, max_left, max_top)
-        img = self.transform(img) if self.transform else np.array(img)
+        img = self._transform(img) if self._transform else np.array(img)
         
         n_digits = len(labels) if len(labels) <= 5 else 5
         return img, n_digits
@@ -49,6 +49,4 @@ class SVHNDataset(Dataset):
             (1 - self._crop_percent) * min_top,
             (1 + self._crop_percent) * max_left, 
             (1 + self._crop_percent) * max_top))
-        image.show()
-        exit()
         return image
