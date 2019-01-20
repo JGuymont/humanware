@@ -10,13 +10,15 @@ from PIL import Image
 
 class SVHNDataset(Dataset):
 
-    def __init__(self, metadata_path, data_dir, crop_percent, transform=None, root=None):
+    def __init__(self, metadata_path, data_dir, crop_percent, transform=None):
         self._crop_percent = crop_percent
         self._metadata = self._load_pickle(metadata_path)
         self._data_dir = data_dir
         self._transform = transform
+        self._img_keys = list(self._metadata.keys())
 
     def __getitem__(self, index):
+        index = self._img_keys[index]
         img_name = '{}/{}.png'.format(self._data_dir, index+1)
         meta = self._metadata[index]['metadata']
         labels = meta['label']
