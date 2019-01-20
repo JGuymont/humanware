@@ -86,7 +86,7 @@ class CNN:
         accuracy = np.sum(pred == real)
         self.accuracies_train.append(accuracy)
 
-        txt_file = open("results/train_accuracies.txt", "a")
+        txt_file = open("results/train_loss.txt", "a")
         txt_file.write("epoch {} loss {} \n".format(self.epoch, loss.item()))
         txt_file.close()
 
