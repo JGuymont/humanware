@@ -110,3 +110,6 @@ train_metadata.pkl
 
 #pycharm files
 .idea/
+
+#result files
+*.txt

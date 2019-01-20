@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 import torch
 import torch.optim as optim
-from model import SimpleConvNet, ModelGithub
+from model import SimpleConvNet, ModelPaper
 import numpy as np
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -49,7 +49,6 @@ class CNN:
                                      shuffle=False, num_workers=2, pin_memory=False)
 
         self.criterion = nn.CrossEntropyLoss()
-        torch.nn.functional.cross_entropy
         self.model = eval(model)().to(device)
         self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr, momentum=0.9, weight_decay=5e-4)
 
@@ -96,7 +95,7 @@ class CNN:
                 self.make_predictions(x_batch.to(device), y_batch.to(device))
 
 
-        total_accuracy_for_epoch = np.mean(self.accuracies)
+        total_accuracy_for_epoch = np.sum(self.accuracies)/pd.read_pickle('test_filenames.pkl').shape[0]
         txt_file = open("test_accuracies.txt", "a")
         txt_file.write("epoch {} loss {} \n".format(self.epoch, total_accuracy_for_epoch))
         txt_file.close()
@@ -107,13 +106,11 @@ class CNN:
         pred = np.argmax(output.detach().cpu().numpy(), axis=1)
         real = y.detach().cpu().numpy()
         total_num = real.shape[0]
-        accuracy = np.sum(pred==real)/total_num
+        accuracy = np.sum(pred==real)
         self.accuracies.append(accuracy)
 
 
 if __name__ == '__main__':
 
-
-
-    trainer = CNN(2, model='ModelGithub', lr=0.001, total_epochs=10)
+    trainer = CNN(32, model='ModelPaper', lr=0.001, total_epochs=150)
     trainer.train_model()

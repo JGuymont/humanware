@@ -62,10 +62,10 @@ class SimpleConvNet(nn.Module):
         x = self.act8(x)
         return x
 
-class ModelGithub(nn.Module):
+class ModelPaper(nn.Module):
 
     def __init__(self):
-        super(ModelGithub, self).__init__()
+        super(ModelPaper, self).__init__()
 
         hidden1 = nn.Sequential(
             nn.Conv2d(in_channels=3, out_channels=48, kernel_size=5, padding=2),
