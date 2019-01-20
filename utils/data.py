@@ -32,7 +32,7 @@ class SVHNDataset(Dataset):
         img = self._transform(img) if self._transform else np.array(img)
         
         n_digits = len(labels) if len(labels) <= 5 else 5
-        return img, n_digits
+        return img, n_digits-1
 
     def __len__(self):
         return len(self._metadata)
