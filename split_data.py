@@ -29,7 +29,7 @@ def main(args):
     data_size = len(metadata)
     train_idx = range(int(args.train_pct * data_size))
     valid_idx = range(int(args.train_pct * data_size), int((args.train_pct + args.valid_pct) * data_size))
-    test_idx = range(int((args.train_pct+args.valid_pct)*data_size), int((args.valid_pct + args.test_pct) * data_size))
+    test_idx = range(int((args.train_pct+args.valid_pct) * data_size), data_size)
     
     train_metadata = {i:metadata[i] for i in train_idx}
     valid_metadata = {i:metadata[i] for i in valid_idx}
