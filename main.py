@@ -36,7 +36,6 @@ if __name__ == '__main__':
     args.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     train_transforms = transforms.Compose([
-        #transforms.CenterCrop(64),
         transforms.Resize((64, 64)),
         #transforms.RandomApply([
         #    transforms.RandomAffine(degrees=30, shear=20),
@@ -49,7 +48,6 @@ if __name__ == '__main__':
     ])
 
     test_transforms = transforms.Compose([
-        #transforms.CenterCrop(54),
         transforms.Resize((54, 54)),
         transforms.ToTensor(),
     ])
