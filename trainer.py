@@ -23,19 +23,19 @@ class Trainer:
             raise ValueError('Only SGD is supported')
 
     def train_model(self, trainloader, devloader):
-        print(' [*] Starting training')
-        for _ in tqdm(range(self.epochs)):
+        for _ in range(self.epochs):
             self.run_epoch(trainloader, devloader)
 
     def run_epoch(self, trainloader, devloader):
         self.accuracies_train = []
-        for x_batch, target_batch in tqdm(trainloader):      
+        for x_batch, target_batch in trainloader:      
             self.train_on_batch(x_batch.to(self.device), target_batch.to(self.device))
 
         total_accuracy_for_epoch = np.sum(self.accuracies_train) / len(trainloader)
         txt_file = open("results/train_accuracies.txt", "a")
-        txt_file.write("epoch {} loss {} \n".format(self.epoch, total_accuracy_for_epoch))
+        txt_file.write("epoch {} accuracy {} \n".format(self.epoch, total_accuracy_for_epoch))
         txt_file.close()
+        print(" [*] epoch {} train accuracy {}".format(self.epoch, total_accuracy_for_epoch))
 
         self.validation(devloader)
         self.epoch += 1
@@ -58,16 +58,16 @@ class Trainer:
         txt_file.close()
 
     def validation(self, devloader):
-        print(' [*] Computing validation accuracy')
         self.accuracies_val = []
         with torch.no_grad():
-            for x_batch, y_batch in tqdm(devloader):
+            for x_batch, y_batch in devloader:
                 self.validation_batch(x_batch.to(self.device), y_batch.to(self.device))
 
         total_accuracy_for_epoch = np.sum(self.accuracies_val) / len(devloader)
         txt_file = open("results/val_accuracies.txt", "a")
-        txt_file.write("epoch {} loss {} \n".format(self.epoch, total_accuracy_for_epoch))
+        txt_file.write("epoch {} accuracy {} \n".format(self.epoch, total_accuracy_for_epoch))
         txt_file.close()
+        print(" [*] epoch {} valid accuracy {} \n".format(self.epoch, total_accuracy_for_epoch))
 
     def validation_batch(self, x, y):
         self.model.eval()
