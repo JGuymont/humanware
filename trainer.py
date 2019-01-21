@@ -9,16 +9,18 @@ from models.small_cnn import SmallCNN
 import pandas as pd
 
 class Trainer:
-    def __init__(self, args):
-        self.epochs = args.n_epochs
-        self.epoch = 0
-        self.lr = args.learning_rate
-        self.batch_size = args.batch_size
+    def __init__(self, conf):
+        self.epochs = conf.getint("n_epochs")
+        self.epoch = conf.getint("epoch_start")
+        self.lr = conf.getfloat("learning_rate")
+        self.batch_size = conf.getint("batch_size")
         self.criterion = nn.CrossEntropyLoss()
-        self.model = eval(args.model)(args).to(args.device)
-        self.device = args.device
-        if args.optim == 'SGD':
-            self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr, momentum=0.9, weight_decay=5e-4)
+        self.model = eval(conf.get('model'))(conf).to(conf.get('device'))
+        self.device = conf.get('device')
+        if conf.get("optim") == 'SGD':
+            self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr,
+                                       momentum=conf.getfloat("momentum"),
+                                       weight_decay=conf.getfloat("weight_decay"))
         else:
             # TODO: add Adam
             raise ValueError('Only SGD is supported')

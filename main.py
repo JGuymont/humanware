@@ -6,12 +6,14 @@ from torchvision import transforms
 from utils.data import SVHNDataset
 from utils import visualization
 from trainer import Trainer
+from configparser import ConfigParser
 
 def argparser():
     """
     Command line argument parser
     """
     parser = argparse.ArgumentParser(description='Split metadata into train/valid/test')
+    parser.add_argument('config', type=str)
     parser.add_argument('--train_metadata_path', type=str, default='./data/SVHN/metadata/train_metadata.pkl')
     parser.add_argument('--valid_metadata_path', type=str, default='./data/SVHN/metadata/valid_metadata.pkl')
     parser.add_argument('--test_metadata_path', type=str, default='./data/SVHN/metadata/test_metadata.pkl')
@@ -32,16 +34,21 @@ def argparser():
 
 if __name__ == '__main__':
     args = argparser()
-    
-    args.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
+    conf = ConfigParser(args.config)
+
+    conf['device'] = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     train_transforms = transforms.Compose([
         transforms.Resize((64, 64)),
-        #transforms.RandomApply([
-        #    transforms.RandomAffine(degrees=30, shear=20),
-        #    transforms.ColorJitter(brightness=0.5, contrast=.5, saturation=.5),
-        #    transforms.RandomRotation(20),
-        #], p=0.5),
+        transforms.RandomApply([
+           transforms.RandomAffine(degrees=conf.getint("randomAffine_degrees"),
+                                   shear=conf.getint("randomAffine_shear")),
+           transforms.ColorJitter(brightness=conf.getfloat("colorJitter_brightness"),
+                                  contrast=conf.getfloat("colorJitter_contrast"),
+                                  saturation=conf.getfloat("colorJitter_saturation")),
+           transforms.RandomRotation(conf.getint("randomRotation_degrees")),
+        ], p=0.5),
         transforms.RandomResizedCrop(54),
         transforms.ToTensor(),
         # transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
@@ -53,30 +60,30 @@ if __name__ == '__main__':
     ])
 
     train_data = SVHNDataset(
-        metadata_path=args.train_metadata_path, 
-        data_dir=args.data_dir, 
-        crop_percent=args.crop_percent, 
+        metadata_path=conf.get("train_metadata_path"),
+        data_dir=conf.get("data_dir"),
+        crop_percent=conf.getfloat("train_metadata_path"),
         transform=train_transforms)
 
     valid_data = SVHNDataset(
-        metadata_path=args.valid_metadata_path, 
-        data_dir=args.data_dir, 
-        crop_percent=args.crop_percent, 
+        metadata_path=conf.get("valid_metadata_path"),
+        data_dir=conf.get("data_dir"),
+        crop_percent=conf.getfloat("train_metadata_path"),
         transform=test_transforms)
     
     test_data = SVHNDataset(
-        metadata_path=args.test_metadata_path, 
-        data_dir=args.data_dir, 
-        crop_percent=args.crop_percent, 
+        metadata_path=conf.get("test_metadata_path"),
+        data_dir=conf.get("data_dir"),
+        crop_percent=conf.getfloat("train_metadata_path"),
         transform=test_transforms)
 
     
-    trainloader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=True)
+    trainloader = DataLoader(train_data, batch_size=conf.getint("batch_size"), shuffle=True, num_workers=4, pin_memory=True)
     devloader = DataLoader(valid_data, batch_size=100, num_workers=4, pin_memory=True)
     testloader = DataLoader(test_data, batch_size=100, num_workers=4, pin_memory=True)
 
-    if not os.path.isdir('results'):
-        os.mkdir('results')
+    if not os.path.isdir("results"):
+        os.mkdir("results")
 
-    trainer = Trainer(args)
+    trainer = Trainer(conf)
     trainer.train_model(trainloader, devloader)
