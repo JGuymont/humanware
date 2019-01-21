@@ -3,7 +3,7 @@ import torch.nn as nn
 import torchvision
 import torchvision.transforms as transforms
 
-class ConvNet(nn.Module):
+class SmallCNN(nn.Module):
     def __init__(self, args):
         super(ConvNet, self).__init__()
         self.layer1 = nn.Sequential(
