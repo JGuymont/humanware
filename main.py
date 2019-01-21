@@ -22,8 +22,8 @@ def argparser():
 
     parser.add_argument('--model', type=str, choices=['ModelPaper', 'ConvNet'])
     parser.add_argument('--num_classes', type=int, default=5)
-    parser.add_argument('--n_epochs', type=int, default=100)
-    parser.add_argument('--batch_size', type=int, default=128)
+    parser.add_argument('--n_epochs', type=int, default=10)
+    parser.add_argument('--batch_size', type=int, default=16)
     parser.add_argument('--learning_rate', type=float, default=0.001)
     parser.add_argument('--crop_percent', type=float, default=0.3)
     parser.add_argument('--optim', type=str, default='SGD')
@@ -56,26 +56,26 @@ if __name__ == '__main__':
 
     train_data = SVHNDataset(
         metadata_path=args.train_metadata_path, 
-        data_dir=args.data_dir, 
-        crop_percent=args.crop_percent, 
+        data_dir=args.data_dir,
+        crop_percent=args.crop_percent,
         transform=train_transforms)
 
     valid_data = SVHNDataset(
         metadata_path=args.valid_metadata_path, 
-        data_dir=args.data_dir, 
-        crop_percent=args.crop_percent, 
+        data_dir=args.data_dir,
+        crop_percent=args.crop_percent,
         transform=test_transforms)
     
     test_data = SVHNDataset(
-        metadata_path=args.test_metadata_path, 
-        data_dir=args.data_dir, 
-        crop_percent=args.crop_percent, 
+        metadata_path=args.test_metadata_path,
+        data_dir=args.data_dir,
+        crop_percent=args.crop_percent,
         transform=test_transforms)
 
     
     trainloader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=True)
-    devloader = DataLoader(valid_data, batch_size=100, num_workers=4, pin_memory=True)
-    testloader = DataLoader(test_data, batch_size=100, num_workers=4, pin_memory=True)
+    devloader = DataLoader(valid_data, batch_size=args.batch_size, num_workers=4, pin_memory=True)
+    testloader = DataLoader(test_data, batch_size=args.batch_size, num_workers=4, pin_memory=True)
 
     if not os.path.isdir('results'):
         os.mkdir('results')
