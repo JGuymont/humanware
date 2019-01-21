@@ -34,21 +34,20 @@ def argparser():
 
 if __name__ == '__main__':
     args = argparser()
-
-    conf = ConfigParser(args.config)
-
-    conf['device'] = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    conf = ConfigParser()
+    conf.read(args.config)
+    conf.set('model', 'device', 'cuda:0' if torch.cuda.is_available() else 'cpu')
 
     train_transforms = transforms.Compose([
         transforms.Resize((64, 64)),
-        transforms.RandomApply([
-           transforms.RandomAffine(degrees=conf.getint("randomAffine_degrees"),
-                                   shear=conf.getint("randomAffine_shear")),
-           transforms.ColorJitter(brightness=conf.getfloat("colorJitter_brightness"),
-                                  contrast=conf.getfloat("colorJitter_contrast"),
-                                  saturation=conf.getfloat("colorJitter_saturation")),
-           transforms.RandomRotation(conf.getint("randomRotation_degrees")),
-        ], p=0.5),
+        # transforms.RandomApply([
+        #    transforms.RandomAffine(degrees=conf.getint("randomAffine_degrees"),
+        #                            shear=conf.getint("randomAffine_shear")),
+        #    transforms.ColorJitter(brightness=conf.getfloat("colorJitter_brightness"),
+        #                           contrast=conf.getfloat("colorJitter_contrast"),
+        #                           saturation=conf.getfloat("colorJitter_saturation")),
+        #    transforms.RandomRotation(conf.getint("randomRotation_degrees")),
+        # ], p=0.5),
         transforms.RandomResizedCrop(54),
         transforms.ToTensor(),
         # transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
@@ -60,25 +59,25 @@ if __name__ == '__main__':
     ])
 
     train_data = SVHNDataset(
-        metadata_path=conf.get("train_metadata_path"),
-        data_dir=conf.get("data_dir"),
-        crop_percent=conf.getfloat("train_metadata_path"),
+        metadata_path=conf.get("paths", "train_metadata"),
+        data_dir=conf.get("paths", "data_dir"),
+        crop_percent=conf.getfloat("preprocessing", "crop_percent"),
         transform=train_transforms)
 
     valid_data = SVHNDataset(
-        metadata_path=conf.get("valid_metadata_path"),
-        data_dir=conf.get("data_dir"),
-        crop_percent=conf.getfloat("train_metadata_path"),
+        metadata_path=conf.get("paths", "valid_metadata"),
+        data_dir=conf.get("paths", "data_dir"),
+        crop_percent=conf.getfloat("preprocessing", "crop_percent"),
         transform=test_transforms)
     
     test_data = SVHNDataset(
-        metadata_path=conf.get("test_metadata_path"),
-        data_dir=conf.get("data_dir"),
-        crop_percent=conf.getfloat("train_metadata_path"),
+        metadata_path=conf.get("paths", "test_metadata"),
+        data_dir=conf.get("paths", "data_dir"),
+        crop_percent=conf.getfloat("preprocessing", "crop_percent"),
         transform=test_transforms)
 
     
-    trainloader = DataLoader(train_data, batch_size=conf.getint("batch_size"), shuffle=True, num_workers=4, pin_memory=True)
+    trainloader = DataLoader(train_data, batch_size=conf.getint("model", "batch_size"), shuffle=True, num_workers=4, pin_memory=True)
     devloader = DataLoader(valid_data, batch_size=100, num_workers=4, pin_memory=True)
     testloader = DataLoader(test_data, batch_size=100, num_workers=4, pin_memory=True)
 

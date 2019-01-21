@@ -10,17 +10,18 @@ import pandas as pd
 
 class Trainer:
     def __init__(self, conf):
-        self.epochs = conf.getint("n_epochs")
-        self.epoch = conf.getint("epoch_start")
-        self.lr = conf.getfloat("learning_rate")
-        self.batch_size = conf.getint("batch_size")
+        model_conf = conf["model"]
+        self.epochs = model_conf.getint("n_epochs")
+        self.epoch = model_conf.getint("epoch_start")
+        self.lr = model_conf.getfloat("learning_rate")
+        self.batch_size = model_conf.getint("batch_size")
         self.criterion = nn.CrossEntropyLoss()
-        self.model = eval(conf.get('model'))(conf).to(conf.get('device'))
-        self.device = conf.get('device')
-        if conf.get("optim") == 'SGD':
+        self.device = torch.device(model_conf.get('device'))
+        self.model = eval(model_conf.get('name'))(model_conf).to(self.device)
+        if model_conf.get("optim") == 'SGD':
             self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr,
-                                       momentum=conf.getfloat("momentum"),
-                                       weight_decay=conf.getfloat("weight_decay"))
+                                       momentum=model_conf.getfloat("momentum"),
+                                       weight_decay=model_conf.getfloat("weight_decay"))
         else:
             # TODO: add Adam
             raise ValueError('Only SGD is supported')
