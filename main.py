@@ -22,8 +22,8 @@ def argparser():
 
     parser.add_argument('--model', type=str, choices=['ModelPaper', 'ConvNet'])
     parser.add_argument('--num_classes', type=int, default=5)
-    parser.add_argument('--n_epochs', type=int, default=2)
-    parser.add_argument('--batch_size', type=int, default=100)
+    parser.add_argument('--n_epochs', type=int, default=100)
+    parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--learning_rate', type=float, default=0.001)
     parser.add_argument('--crop_percent', type=float, default=0.3)
     parser.add_argument('--optim', type=str, default='SGD')
@@ -36,19 +36,21 @@ if __name__ == '__main__':
     args.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     train_transforms = transforms.Compose([
-        transforms.CenterCrop(64),
-        transforms.RandomApply([
-            transforms.RandomAffine(degrees=30, shear=20),
-            transforms.ColorJitter(brightness=0.5, contrast=.5, saturation=.5),
-            transforms.RandomRotation(20),
-        ], p=0.5),
+        #transforms.CenterCrop(64),
+        transforms.Resize((64, 64)),
+        #transforms.RandomApply([
+        #    transforms.RandomAffine(degrees=30, shear=20),
+        #    transforms.ColorJitter(brightness=0.5, contrast=.5, saturation=.5),
+        #    transforms.RandomRotation(20),
+        #], p=0.5),
         transforms.RandomResizedCrop(54),
         transforms.ToTensor(),
         # transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
     ])
 
     test_transforms = transforms.Compose([
-        transforms.CenterCrop(54),
+        #transforms.CenterCrop(54),
+        transforms.Resize((54, 54)),
         transforms.ToTensor(),
     ])
 
