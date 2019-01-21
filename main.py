@@ -8,6 +8,7 @@ from utils import visualization
 from trainer import Trainer
 from configparser import ConfigParser
 
+
 def argparser():
     """
     Command line argument parser
