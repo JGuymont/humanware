@@ -3,9 +3,11 @@
 ## Running the experiment
 ```
 python split_data.py --train_pct 0.7 --valid_pct 0.2 --test_pct 0.1
-python main.py --model [ModelPaper, ConvNet]
+python main.py --model [LargeCNN, MediumCNN, SmallCNN]
 ```
-Note: the images need to be in `./data/SVNH/train/`
+Note: 
+1. the images need to be in `./data/SVNH/train/`
+2. The model `LargeCNN` is the model describe in Goodfellow et al, 2013
 
 ## Data
 ```
