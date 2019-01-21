@@ -1,12 +1,15 @@
+"""
+Implementation of the CNN describe in Goodfellow et al, 2013
+"""
 import torch.nn as nn
 import torchvision
 import torch
 import torch.nn.functional as F
 
-class ModelPaper(nn.Module):
+class LargeCNN(nn.Module):
 
     def __init__(self, args):
-        super(ModelPaper, self).__init__()
+        super(LargeCNN, self).__init__()
 
         hidden1 = nn.Sequential(
             nn.Conv2d(in_channels=3, out_channels=48, kernel_size=5, padding=2),
