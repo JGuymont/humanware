@@ -1,5 +1,27 @@
 # Humanware-block1
 
+## Running the experiment
+```
+python split_data.py --train_pct 0.7 --valid_pct 0.2 --test_pct 0.1
+python main.py --model [ModelPaper, ConvNet]
+```
+Note: the images need to be in `./data/SVNH/train/`
+
+## Data
+```
+cd Humanware-block1
+cp '/rap/jvb-000-aa/COURS2019/etudiants/data/humanware/SVHN/train_metadata.pkl' './data/SVHN/'
+cp '/rap/jvb-000-aa/COURS2019/etudiants/data/humanware/SVHN/train.tar.gz' './data/SVHN/'
+tar -xzf $HOME'/digit-detection/data/SVHN/train.tar.gz' -C './data/SVHN/'
+```
+
+## Container
+```
+source /rap/jvb-000-aa/COURS2019/etudiants/common.env
+echo 'source /rap/jvb-000-aa/COURS2019/etudiants/common.env' >> ~/.bashrc
+singularity shell --nv /rap/jvb-000-aa/COURS2019/etudiants/ift6759.simg
+```
+
 ## To do
 -Find standardization coefficients for images (in self.transforms)
 
@@ -154,4 +176,4 @@ epoch 145 loss 0.8802753666566896
 epoch 146 loss 0.8820712361568392 
 epoch 147 loss 0.87847949715654 
 epoch 148 loss 0.8811733014067644 
-epoch 149 loss 0.8820712361568392 
+epoch 149 loss 0.8820712361568392
