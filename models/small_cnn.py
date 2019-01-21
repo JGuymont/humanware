@@ -5,7 +5,7 @@ import torchvision.transforms as transforms
 
 class SmallCNN(nn.Module):
     def __init__(self, args):
-        super(ConvNet, self).__init__()
+        super(SmallCNN, self).__init__()
         self.layer1 = nn.Sequential(
             nn.Conv2d(3, 16, kernel_size=5, stride=1, padding=2),
             nn.BatchNorm2d(16),
