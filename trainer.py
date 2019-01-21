@@ -3,8 +3,9 @@ from tqdm import tqdm
 import torch
 import torch.optim as optim
 import numpy as np
-from models.cnn import ConvNet
-from models.model_paper import ModelPaper
+from models.large_cnn import LargeCNN
+from models.medium_cnn import MediumCNN
+from models.small_cnn import SmallCNN
 import pandas as pd
 
 class Trainer:
