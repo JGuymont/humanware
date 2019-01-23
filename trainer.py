@@ -8,6 +8,8 @@ from models.medium_cnn import MediumCNN
 from models.small_cnn import SmallCNN
 from models.senet import senet
 import pandas as pd
+import os
+import shutil
 
 class Trainer:
     def __init__(self, conf):
@@ -26,6 +28,8 @@ class Trainer:
         else:
             # TODO: add Adam
             raise ValueError('Only SGD is supported')
+        self.checkpoints_path = model_conf.get("checkpoints_path")
+        self.best_accuracy = 0
 
     def train_model(self, trainloader, devloader):
         self.train_size = sum([x.shape[0] for x, _ in trainloader])
@@ -44,7 +48,8 @@ class Trainer:
         txt_file.close()
         print(" [*] epoch {} train accuracy {}".format(self.epoch, total_accuracy_for_epoch))
 
-        self.validation(devloader)
+        total_accuracy_for_epoch = self.validation(devloader)
+        self.save_checkpoint(total_accuracy_for_epoch)
         self.epoch += 1
 
     def train_on_batch(self, x, y):
@@ -75,6 +80,7 @@ class Trainer:
         txt_file.write("epoch {} accuracy {} \n".format(self.epoch, total_accuracy_for_epoch))
         txt_file.close()
         print(" [*] epoch {} valid accuracy {} \n".format(self.epoch, total_accuracy_for_epoch))
+        return total_accuracy_for_epoch
 
     def validation_batch(self, x, y):
         self.model.eval()
@@ -108,3 +114,12 @@ class Trainer:
         real = y.detach().cpu().numpy()
         accuracy = np.sum(pred == real)
         self.accuracies_test.append(accuracy)
+
+    def save_checkpoint(self, accuracy):
+        state_dict = {'epoch': self.epoch + 1,
+                       'state_dict': self.model.state_dict(),
+                       'optim_dict' : self.optimizer.state_dict()}
+        torch.save(state_dict, os.path.join(self.checkpoints_path, "last_{:+.2f}.pth".format(accuracy)))
+        if accuracy > self.best_accuracy:
+            self.best_accuracy = accuracy
+            shutil.copyfile(os.path.join(self.checkpoints_path, "best_{:+.2f}.pth".format(accuracy)))
