@@ -6,6 +6,7 @@ import numpy as np
 from models.large_cnn import LargeCNN
 from models.medium_cnn import MediumCNN
 from models.small_cnn import SmallCNN
+from models.residual_network import ResNet
 import pandas as pd
 
 class Trainer:
@@ -26,12 +27,12 @@ class Trainer:
     def train_model(self, trainloader, devloader):
         self.train_size = sum([x.shape[0] for x, _ in trainloader])
         self.valid_size = sum([x.shape[0] for x, _ in devloader])
-        for _ in range(self.epochs):
+        for _ in tqdm(range(self.epochs)):
             self.run_epoch(trainloader, devloader)
 
     def run_epoch(self, trainloader, devloader):
         self.accuracies_train = []
-        for x_batch, target_batch in trainloader:      
+        for x_batch, target_batch in tqdm(trainloader):      
             self.train_on_batch(x_batch.to(self.device), target_batch.to(self.device))
 
         total_accuracy_for_epoch = np.sum(self.accuracies_train) / self.train_size
