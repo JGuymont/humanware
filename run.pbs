@@ -8,4 +8,4 @@
 # set the working directory to where the job is launched
 cd "${PBS_O_WORKDIR}"
 
-s_exec python main.py --model SmallCNN --n_epochs 5
+s_exec python main.py ./config/resnet01.ini
