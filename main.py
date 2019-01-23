@@ -1,6 +1,8 @@
 import os
 import argparse
 import torch
+from datetime import datetime
+
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from utils.data import SVHNDataset
@@ -75,8 +77,11 @@ if __name__ == '__main__':
     devloader = DataLoader(valid_data, batch_size=100, num_workers=4, pin_memory=True)
     testloader = DataLoader(test_data, batch_size=100, num_workers=4, pin_memory=True)
 
-    if not os.path.isdir('results'):
-        os.mkdir('results')
+    os.makedirs('results', exist_ok=True)
+
+    args.checkpoints_path = os.path.join(args.checkpoints_path, args.model,
+                                         datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+    os.makedirs(args.checkpoints_path, exist_ok=True)
 
     trainer = Trainer(args)
     trainer.train_model(trainloader, devloader)
