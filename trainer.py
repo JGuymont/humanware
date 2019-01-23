@@ -6,6 +6,7 @@ import numpy as np
 from models.large_cnn import LargeCNN
 from models.medium_cnn import MediumCNN
 from models.small_cnn import SmallCNN
+from models.senet import senet
 import pandas as pd
 
 class Trainer:
