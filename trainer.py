@@ -7,21 +7,28 @@ from models.large_cnn import LargeCNN
 from models.medium_cnn import MediumCNN
 from models.small_cnn import SmallCNN
 import pandas as pd
+import os
+import shutil
 
 class Trainer:
-    def __init__(self, args):
-        self.epochs = args.n_epochs
-        self.epoch = 0
-        self.lr = args.learning_rate
-        self.batch_size = args.batch_size
+    def __init__(self, conf):
+        model_conf = conf["model"]
+        self.epochs = model_conf.getint("n_epochs")
+        self.epoch = model_conf.getint("epoch_start")
+        self.lr = model_conf.getfloat("learning_rate")
+        self.batch_size = model_conf.getint("batch_size")
         self.criterion = nn.CrossEntropyLoss()
-        self.model = eval(args.model)(args).to(args.device)
-        self.device = args.device
-        if args.optim == 'SGD':
-            self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr, momentum=0.9, weight_decay=5e-4)
+        self.device = torch.device(model_conf.get('device'))
+        self.model = eval(model_conf.get('name'))(model_conf).to(self.device)
+        if model_conf.get("optim") == 'SGD':
+            self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr,
+                                       momentum=model_conf.getfloat("momentum"),
+                                       weight_decay=model_conf.getfloat("weight_decay"))
         else:
             # TODO: add Adam
             raise ValueError('Only SGD is supported')
+        self.checkpoints_path = model_conf.get("checkpoints_path")
+        self.best_accuracy = 0
 
     def train_model(self, trainloader, devloader):
         self.train_size = sum([x.shape[0] for x, _ in trainloader])
@@ -40,7 +47,8 @@ class Trainer:
         txt_file.close()
         print(" [*] epoch {} train accuracy {}".format(self.epoch, total_accuracy_for_epoch))
 
-        self.validation(devloader)
+        total_accuracy_for_epoch = self.validation(devloader)
+        self.save_checkpoint(total_accuracy_for_epoch)
         self.epoch += 1
 
     def train_on_batch(self, x, y):
@@ -71,6 +79,7 @@ class Trainer:
         txt_file.write("epoch {} accuracy {} \n".format(self.epoch, total_accuracy_for_epoch))
         txt_file.close()
         print(" [*] epoch {} valid accuracy {} \n".format(self.epoch, total_accuracy_for_epoch))
+        return total_accuracy_for_epoch
 
     def validation_batch(self, x, y):
         self.model.eval()
@@ -104,3 +113,12 @@ class Trainer:
         real = y.detach().cpu().numpy()
         accuracy = np.sum(pred == real)
         self.accuracies_test.append(accuracy)
+
+    def save_checkpoint(self, accuracy):
+        state_dict = {'epoch': self.epoch + 1,
+                       'state_dict': self.model.state_dict(),
+                       'optim_dict' : self.optimizer.state_dict()}
+        torch.save(state_dict, os.path.join(self.checkpoints_path, "last_{:+.2f}.pth".format(accuracy)))
+        if accuracy > self.best_accuracy:
+            self.best_accuracy = accuracy
+            shutil.copyfile(os.path.join(self.checkpoints_path, "best_{:+.2f}.pth".format(accuracy)))

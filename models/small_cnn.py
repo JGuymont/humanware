@@ -4,7 +4,7 @@ import torchvision
 import torchvision.transforms as transforms
 
 class SmallCNN(nn.Module):
-    def __init__(self, args):
+    def __init__(self, conf):
         super(SmallCNN, self).__init__()
         self.layer1 = nn.Sequential(
             nn.Conv2d(3, 16, kernel_size=5, stride=1, padding=2),
@@ -16,7 +16,7 @@ class SmallCNN(nn.Module):
             nn.BatchNorm2d(32),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2))
-        self.fc = nn.Linear(5408, args.num_classes)
+        self.fc = nn.Linear(5408, conf.getint("num_classes"))
         
     def forward(self, x):
         out = self.layer1(x)
