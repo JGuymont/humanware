@@ -8,7 +8,7 @@ import torch.nn.functional as F
 
 class LargeCNN(nn.Module):
 
-    def __init__(self, args):
+    def __init__(self, conf):
         super(LargeCNN, self).__init__()
 
         hidden1 = nn.Sequential(
@@ -90,7 +90,7 @@ class LargeCNN(nn.Module):
             hidden9,
             hidden10
         )
-        self._digit_length = nn.Sequential(nn.Linear(3072, args.num_classes))
+        self._digit_length = nn.Sequential(nn.Linear(3072, conf.getint("num_classes")))
         self._digit1 = nn.Sequential(nn.Linear(3072, 11))
         self._digit2 = nn.Sequential(nn.Linear(3072, 11))
         self._digit3 = nn.Sequential(nn.Linear(3072, 11))
