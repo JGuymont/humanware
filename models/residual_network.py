@@ -44,7 +44,7 @@ class ResNet(nn.Module):
     Args:
         layers (list of int): Number of blocks at each layers
     """
-    def __init__(self, args, block=ResidualBlock, layers=[2, 2, 2]):
+    def __init__(self, conf, block=ResidualBlock, layers=[2, 2, 2]):
         super(ResNet, self).__init__()
         self.in_channels = 16
         self.conv = conv3x3(3, 16)
@@ -54,7 +54,7 @@ class ResNet(nn.Module):
         self.layer2 = self.make_layer(block, 32, layers[1], 2)
         self.layer3 = self.make_layer(block, 64, layers[2], 2)
         self.avg_pool = nn.AvgPool2d(8)
-        self.fc = nn.Linear(64, args.num_classes)
+        self.fc = nn.Linear(64, conf.getint("num_classes"))
 
     def make_layer(self, block, out_channels, blocks, stride=1):
         downsample = None
