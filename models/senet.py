@@ -371,11 +371,11 @@ class SENet(nn.Module):
         return x
 
 
-def initialize_pretrained_model(model, num_classes, settings, chk_path=None):
+def initialize_pretrained_model(model, num_classes, settings, pth_path=None):
     assert num_classes == settings['num_classes'], \
         'num_classes should be {}, but is {}'.format(
             settings['num_classes'], num_classes)
-    model.load_state_dict(model_zoo.load_url(settings['url'], chk_path))
+    model.load_state_dict(model_zoo.load_url(settings['url'], pth_path))
     model.input_space = settings['input_space']
     model.input_size = settings['input_size']
     model.input_range = settings['input_range']
@@ -385,19 +385,19 @@ def initialize_pretrained_model(model, num_classes, settings, chk_path=None):
 def senet(conf):
     senet = None
     if conf.getboolean("pretrained"):
-        senet = senet154(pretrained="imagenet", chk_path=conf.get("pretrained_chk_path"))
+        senet = senet154(pretrained="imagenet", pth_path=conf.get("pretrained_pth_path"))
         senet.last_linear = nn.Sequential(senet.last_linear, nn.Linear(senet.last_linear.out_features, conf.getint("num_classes")))
     else:
-        senet = senet154(conf.getint("num_classes"), pretrained=None, chk_path=conf.get("pretrained_chk_path"))
+        senet = senet154(conf.getint("num_classes"), pretrained=None, pth_path=conf.get("pretrained_chk_path"))
 
     return senet
 
-def senet154(num_classes=1000, pretrained='imagenet', chk_path=None):
+def senet154(num_classes=1000, pretrained='imagenet', pth_path=None):
     model = SENet(SEBottleneck, [3, 8, 36, 3], groups=64, reduction=16,
                   dropout_p=0.2, num_classes=num_classes)
     if pretrained is not None:
         settings = pretrained_settings['senet154'][pretrained]
-        initialize_pretrained_model(model, num_classes, settings, chk_path)
+        initialize_pretrained_model(model, num_classes, settings, pth_path)
     return model
 
 
