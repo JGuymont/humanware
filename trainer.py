@@ -32,8 +32,8 @@ class Trainer:
         self.best_accuracy = 0
 
     def train_model(self, trainloader, devloader):
-        self.train_size = sum([x.shape[0] for x, _ in trainloader])
-        self.valid_size = sum([x.shape[0] for x, _ in devloader])
+        self.train_size = len(trainloader.dataset)
+        self.valid_size = len(devloader.dataset)
         for _ in tqdm(range(self.epochs)):
             self.run_epoch(trainloader, devloader)
 
