@@ -13,6 +13,7 @@ import shutil
 
 class Trainer:
     def __init__(self, conf):
+        self.print_freq = conf.getint("log", "print_freq")
         model_conf = conf["model"]
         self.epochs = model_conf.getint("n_epochs")
         self.epoch = model_conf.getint("epoch_start")
@@ -39,8 +40,8 @@ class Trainer:
 
     def run_epoch(self, trainloader, devloader):
         self.accuracies_train = []
-        for x_batch, target_batch in trainloader:      
-            self.train_on_batch(x_batch.to(self.device), target_batch.to(self.device))
+        for i, (x_batch, target_batch) in enumerate(trainloader):
+            self.train_on_batch(i, x_batch.to(self.device), target_batch.to(self.device))
 
         total_accuracy_for_epoch = np.sum(self.accuracies_train) / self.train_size
         txt_file = open("results/train_accuracies.txt", "a")
@@ -52,7 +53,7 @@ class Trainer:
         self.save_checkpoint(total_accuracy_for_epoch)
         self.epoch += 1
 
-    def train_on_batch(self, x, y):
+    def train_on_batch(self, iteration, x, y):
         self.model.train()
         output = self.model(x)
         loss = self.criterion(output, y)
@@ -68,6 +69,8 @@ class Trainer:
         txt_file = open("results/train_loss.txt", "a")
         txt_file.write("epoch {} loss {} \n".format(self.epoch, loss.item()))
         txt_file.close()
+        if iteration % self.print_freq == 0:
+            print(" [*] iteration {} train accuracy {} loss {}".format(iteration, correct, loss.item()))
 
     def validation(self, devloader):
         self.accuracies_val = []
