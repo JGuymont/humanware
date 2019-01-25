@@ -51,7 +51,7 @@ if __name__ == '__main__':
         #                           saturation=conf.getfloat("colorJitter_saturation")),
         #    transforms.RandomRotation(conf.getint("randomRotation_degrees")),
         # ], p=0.5),
-        transforms.RandomResizedCrop(54),
+        transforms.RandomCrop(54),
         transforms.Resize((224,224)),
         transforms.ToTensor(),
         # transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
@@ -81,9 +81,9 @@ if __name__ == '__main__':
         transform=test_transforms)
 
     
-    trainloader = DataLoader(train_data, batch_size=conf.getint("model", "batch_size"), shuffle=True, num_workers=1, pin_memory=True)
-    devloader = DataLoader(valid_data, batch_size=100, num_workers=1, pin_memory=True)
-    testloader = DataLoader(test_data, batch_size=100, num_workers=1, pin_memory=True)
+    trainloader = DataLoader(train_data, batch_size=conf.getint("model", "batch_size"), shuffle=True, num_workers=4, pin_memory=True)
+    devloader = DataLoader(valid_data, batch_size=100, num_workers=4, pin_memory=True)
+    testloader = DataLoader(test_data, batch_size=100, num_workers=4, pin_memory=True)
 
     os.makedirs('results', exist_ok=True)
 
