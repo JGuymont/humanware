@@ -9,6 +9,11 @@ Note:
 1. the images need to be in `./data/SVNH/train/`
 2. The model `LargeCNN` is the model describe in Goodfellow et al, 2013
 
+## Watching a file while running a job
+```
+$ watch tail -n 20 $(ls -rt | grep .out | tail -n 1)
+```
+
 ## Data
 ```
 cd Humanware-block1
