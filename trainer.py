@@ -11,6 +11,7 @@ import pandas as pd
 import os
 import shutil
 import json
+import time
 
 class Trainer:
     def __init__(self, conf):
@@ -40,93 +41,83 @@ class Trainer:
         self.valid_size = None
 
     def train_model(self, trainloader, devloader):
-        self.train_size = len(trainloader.dataset)
-        self.valid_size = len(devloader.dataset)
+        """
+        Find the optimal parameters according to self.criterion
+        using SGD
+        """
+        start_time = time.time()
+
         for _ in range(self.epochs):
-            self.run_epoch(trainloader, devloader)
+            self.model.train()
+            for x_batch, y_batch in trainloader:
+                x_batch = x_batch.to(self.device)
+                y_batch = y_batch.to(self.device)
+                output = self.model(x_batch)
+                loss = self.criterion(output, y_batch)
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+            
+            train_acc, train_loss = self.evaluate(trainloader)
+            valid_acc, valid_loss = self.evaluate(devloader)
 
-    def run_epoch(self, trainloader, devloader):
-        self.accuracies_train = []
-        for x_batch, target_batch in trainloader:      
-            self.train_on_batch(x_batch.to(self.device), target_batch.to(self.device))
+            self.save_checkpoint(valid_acc)
 
-        total_accuracy_for_epoch = np.sum(self.accuracies_train) / self.train_size
+            self._log_epoch(train_acc, train_loss, valid_acc, valid_loss)
+
+            print(' [*] Epoch: {:.0f} | Loss: {:.3f} | Train acc: {:.2f} | Dev acc: {:.2f} | time: {} sec.'.format(
+                self.epoch+1, train_loss, train_acc, valid_acc, round(time.time() - start_time)))
+
+            self.epoch += 1
+
+    def evaluate(self, dataloader):
+        self.model.eval()
+        losses = []
+        total, correct = 0., 0.
+        for (inputs, targets) in dataloader:
+            inputs = inputs.to(self.device)
+            targets = targets.to(self.device)
+
+            outputs = self.model(inputs)
+            loss = self.criterion(outputs, targets)
+            losses.append(loss.item())
+
+            _, predicted = torch.max(outputs.data, 1)
+            total += targets.size(0)
+            correct += predicted.eq(targets.data).cpu().sum().item()
+
+        accuracy = 100. * correct / total
+        return round(accuracy, 4), np.mean(losses)
+
+    def _log_epoch(self, train_acc, train_loss, valid_acc, valid_loss):
         txt_file = open("results/train_accuracies.txt", "a")
-        txt_file.write("epoch {} accuracy {} \n".format(self.epoch, total_accuracy_for_epoch))
+        txt_file.write("epoch {} accuracy {} \n".format(self.epoch, train_acc))
         txt_file.close()
-        print(" [*] epoch {} train accuracy {}".format(self.epoch, total_accuracy_for_epoch))
-
-        total_accuracy_for_epoch = self.validation(devloader)
-        self.save_checkpoint(total_accuracy_for_epoch)
-        self.epoch += 1
-
-    def train_on_batch(self, x, y):
-        self.model.train()
-        output = self.model(x)
-        loss = self.criterion(output, y)
-        self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
-
-        pred = np.argmax(output.detach().cpu().numpy(), axis=1)
-        real = y.detach().cpu().numpy()
-        correct = np.sum(pred == real)
-        self.accuracies_train.append(correct)
 
         txt_file = open("results/train_loss.txt", "a")
-        txt_file.write("epoch {} loss {} \n".format(self.epoch, loss.item()))
+        txt_file.write("epoch {} loss {} \n".format(self.epoch, train_loss))
         txt_file.close()
 
-    def validation(self, devloader):
-        self.accuracies_val = []
-        with torch.no_grad():
-            for x_batch, y_batch in devloader:
-                self.validation_batch(x_batch.to(self.device), y_batch.to(self.device))
-
-        total_accuracy_for_epoch = np.sum(self.accuracies_val) / self.valid_size
         txt_file = open("results/val_accuracies.txt", "a")
-        txt_file.write("epoch {} accuracy {} \n".format(self.epoch, total_accuracy_for_epoch))
+        txt_file.write("epoch {} accuracy {} \n".format(self.epoch, valid_acc))
         txt_file.close()
-        print(" [*] epoch {} valid accuracy {} \n".format(self.epoch, total_accuracy_for_epoch))
-        return total_accuracy_for_epoch
-
-    def validation_batch(self, x, y):
-        self.model.eval()
-        output = self.model(x)
-        loss = self.criterion(output, y)
-
-        pred = np.argmax(output.detach().cpu().numpy(), axis=1)
-        real = y.detach().cpu().numpy()
-        accuracy = np.sum(pred == real)
-        self.accuracies_val.append(accuracy)
 
         txt_file = open("results/loss_val.txt", "a")
-        txt_file.write("epoch {} loss {} \n".format(self.epoch, loss.item()))
-        txt_file.close()
-
-    def test_run(self, testloader):
-        self.accuracies_test = []
-        with torch.no_grad():
-            for x_batch, y_batch in testloader:
-                self.make_predictions(x_batch.to(self.device), y_batch.to(self.device))
-
-        total_accuracy_for_epoch = np.sum(self.accuracies_test) / len(testloader)
-        txt_file = open("results/test_accuracies.txt", "a")
-        txt_file.write("epoch {} loss {} \n".format(self.epoch, total_accuracy_for_epoch))
+        txt_file.write("epoch {} loss {} \n".format(self.epoch, valid_loss))
         txt_file.close()
 
     def make_predictions(self, x, y):
         self.model.eval()
         output = self.model(x)
         pred = np.argmax(output.detach().cpu().numpy(), axis=1)
-        real = y.detach().cpu().numpy()
-        accuracy = np.sum(pred == real)
-        self.accuracies_test.append(accuracy)
+        return pred
 
     def save_checkpoint(self, accuracy):
-        state_dict = {'epoch': self.epoch + 1,
-                       'state_dict': self.model.state_dict(),
-                       'optim_dict' : self.optimizer.state_dict()}
+        state_dict = {
+            'epoch': self.epoch + 1,
+            'state_dict': self.model.state_dict(),
+            'optim_dict' : self.optimizer.state_dict()
+        }
         torch.save(state_dict, os.path.join(self.checkpoints_path, "last_{:+.2f}.pth".format(accuracy)))
         if accuracy > self.best_accuracy:
             self.best_accuracy = accuracy
