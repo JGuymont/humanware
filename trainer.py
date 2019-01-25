@@ -122,7 +122,7 @@ class Trainer:
         torch.save(state_dict, os.path.join(self.checkpoints_path, "last_{:+.2f}.pth".format(accuracy)))
         if accuracy > self.best_accuracy:
             self.best_accuracy = accuracy
-            #shutil.copyfile(
-            #    src=os.path.join(self.checkpoints_path, "best_{:+.2f}.pth".format(accuracy)),
-            #    dst=
-            #)
+            shutil.copyfile(
+                src=os.path.join(self.checkpoints_path, "last_{:+.2f}.pth".format(accuracy)),
+                dst=os.path.join(self.checkpoints_path, "best_{:+.2f}.pth".format(accuracy))
+            )
