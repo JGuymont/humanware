@@ -22,6 +22,11 @@ cp '/rap/jvb-000-aa/COURS2019/etudiants/data/humanware/SVHN/train.tar.gz' './dat
 tar -xzf $HOME'/digit-detection/data/SVHN/train.tar.gz' -C './data/SVHN/'
 ```
 
+## Source the common.env file in your ~/.bashrc:
+```
+$ echo source /rap/jvb-000-aa/COURS2019/etudiants/common.env >> ~/.bashrc
+```
+
 ## Container
 ```
 source /rap/jvb-000-aa/COURS2019/etudiants/common.env
