@@ -10,26 +10,34 @@ from models.residual_network import ResNet
 import pandas as pd
 import os
 import shutil
+import json
 
 class Trainer:
     def __init__(self, conf):
         model_conf = conf["model"]
         self.epochs = model_conf.getint("n_epochs")
         self.epoch = model_conf.getint("epoch_start")
-        self.lr = model_conf.getfloat("learning_rate")
         self.batch_size = model_conf.getint("batch_size")
         self.criterion = nn.CrossEntropyLoss()
         self.device = torch.device(model_conf.get('device'))
         self.model = eval(model_conf.get('name'))(model_conf).to(self.device)
         if model_conf.get("optim") == 'SGD':
-            self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr,
-                                       momentum=model_conf.getfloat("momentum"),
-                                       weight_decay=model_conf.getfloat("weight_decay"))
+            self.optimizer = optim.SGD(
+                self.model.parameters(), 
+                lr=model_conf.getfloat("learning_rate"),
+                momentum=model_conf.getfloat("momentum"),
+                weight_decay=model_conf.getfloat("weight_decay"))
+        elif model_conf.get("optim") == 'Adam':
+            self.optimizer = optim.Adam(
+                self.model.parameters(),
+                lr=model_conf.getfloat("learning_rate"),
+                betas=json.loads(conf["model"].get("betas")))
         else:
-            # TODO: add Adam
             raise ValueError('Only SGD is supported')
         self.checkpoints_path = model_conf.get("checkpoints_path")
         self.best_accuracy = 0
+        self.train_size = None
+        self.valid_size = None
 
     def train_model(self, trainloader, devloader):
         self.train_size = len(trainloader.dataset)
