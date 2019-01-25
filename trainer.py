@@ -34,12 +34,12 @@ class Trainer:
     def train_model(self, trainloader, devloader):
         self.train_size = len(trainloader.dataset)
         self.valid_size = len(devloader.dataset)
-        for _ in tqdm(range(self.epochs)):
+        for _ in range(self.epochs):
             self.run_epoch(trainloader, devloader)
 
     def run_epoch(self, trainloader, devloader):
         self.accuracies_train = []
-        for x_batch, target_batch in tqdm(trainloader):      
+        for x_batch, target_batch in trainloader:      
             self.train_on_batch(x_batch.to(self.device), target_batch.to(self.device))
 
         total_accuracy_for_epoch = np.sum(self.accuracies_train) / self.train_size
@@ -99,7 +99,7 @@ class Trainer:
     def test_run(self, testloader):
         self.accuracies_test = []
         with torch.no_grad():
-            for x_batch, y_batch in tqdm(testloader):
+            for x_batch, y_batch in testloader:
                 self.make_predictions(x_batch.to(self.device), y_batch.to(self.device))
 
         total_accuracy_for_epoch = np.sum(self.accuracies_test) / len(testloader)
