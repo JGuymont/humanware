@@ -11,6 +11,7 @@ import pandas as pd
 import os
 import shutil
 
+
 class Trainer:
     def __init__(self, conf):
         self.print_freq = conf.getint("log", "print_freq")
@@ -22,70 +23,85 @@ class Trainer:
         self.criterion = nn.CrossEntropyLoss()
         self.device = torch.device(model_conf.get('device'))
         self.model = eval(model_conf.get('name'))(model_conf).to(self.device)
+
         if model_conf.get("optim") == 'SGD':
             self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr,
                                        momentum=model_conf.getfloat("momentum"),
                                        weight_decay=model_conf.getfloat("weight_decay"))
-        else:
-            # TODO: add Adam
-            raise ValueError('Only SGD is supported')
+        elif model_conf.get("optim") == "Adam":
+            self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
+
+        if model_conf.get("checkpoint") is not None:
+            self.load_checkpoint(model_conf.get("checkpoint"))
+
         self.checkpoints_path = model_conf.get("checkpoints_path")
         self.best_accuracy = 0
+        self.last_accuracy = 0
 
     def train_model(self, trainloader, devloader):
+        print(len(trainloader.dataset))
+        self.model.train()
         self.train_size = len(trainloader.dataset)
         self.valid_size = len(devloader.dataset)
         for _ in range(self.epochs):
             self.run_epoch(trainloader, devloader)
 
     def run_epoch(self, trainloader, devloader):
-        self.accuracies_train = []
+        self.accuracies_train = 0
         for i, (x_batch, target_batch) in enumerate(trainloader):
             self.train_on_batch(i, x_batch.to(self.device), target_batch.to(self.device))
 
-        total_accuracy_for_epoch = np.sum(self.accuracies_train) / self.train_size
+        total_accuracy_for_epoch = self.accuracies_train / float((i + 1) * self.batch_size)
         txt_file = open("results/train_accuracies.txt", "a")
         txt_file.write("epoch {} accuracy {} \n".format(self.epoch, total_accuracy_for_epoch))
         txt_file.close()
-        print(" [*] epoch {} train accuracy {}".format(self.epoch, total_accuracy_for_epoch))
+        print(" [*] epoch {}/{} train accuracy {}".format(self.epoch, self.epochs, total_accuracy_for_epoch))
 
         total_accuracy_for_epoch = self.validation(devloader)
         self.save_checkpoint(total_accuracy_for_epoch)
         self.epoch += 1
 
     def train_on_batch(self, iteration, x, y):
-        self.model.train()
+
         output = self.model(x)
         loss = self.criterion(output, y)
-        self.optimizer.zero_grad()
+
         loss.backward()
         self.optimizer.step()
+        self.optimizer.zero_grad()
 
         pred = np.argmax(output.detach().cpu().numpy(), axis=1)
         real = y.detach().cpu().numpy()
         correct = np.sum(pred == real)
-        self.accuracies_train.append(correct)
+        self.accuracies_train += correct
 
         txt_file = open("results/train_loss.txt", "a")
         txt_file.write("epoch {} loss {} \n".format(self.epoch, loss.item()))
         txt_file.close()
+
         if iteration % self.print_freq == 0:
-            print(" [*] iteration {} train accuracy {} loss {}".format(iteration, correct, loss.item()))
+            print("iteration {it}/{total} train accuracy {acc:.4f}({mean_acc:.4f}) loss {loss}".format(it=iteration,
+                                                                                                       total=self.train_size // self.batch_size,
+                                                                                                       acc=correct * 100 / self.batch_size,
+                                                                                                       mean_acc=self.accuracies_train * 100 / float(
+                                                                                                           (
+                                                                                                           iteration + 1) * self.batch_size),
+                                                                                                       loss=loss.item()))
 
     def validation(self, devloader):
-        self.accuracies_val = []
+        self.accuracies_val = 0
         with torch.no_grad():
-            for x_batch, y_batch in devloader:
-                self.validation_batch(x_batch.to(self.device), y_batch.to(self.device))
+            for i, (x_batch, y_batch) in enumerate(devloader):
+                self.validation_batch(i, x_batch.to(self.device), y_batch.to(self.device))
 
-        total_accuracy_for_epoch = np.sum(self.accuracies_val) / self.valid_size
+        total_accuracy_for_epoch = self.accuracies_val / float((i + 1) * 100)
         txt_file = open("results/val_accuracies.txt", "a")
         txt_file.write("epoch {} accuracy {} \n".format(self.epoch, total_accuracy_for_epoch))
         txt_file.close()
         print(" [*] epoch {} valid accuracy {} \n".format(self.epoch, total_accuracy_for_epoch))
         return total_accuracy_for_epoch
 
-    def validation_batch(self, x, y):
+    def validation_batch(self, iteration, x, y):
         self.model.eval()
         output = self.model(x)
         loss = self.criterion(output, y)
@@ -93,11 +109,19 @@ class Trainer:
         pred = np.argmax(output.detach().cpu().numpy(), axis=1)
         real = y.detach().cpu().numpy()
         accuracy = np.sum(pred == real)
-        self.accuracies_val.append(accuracy)
+        self.accuracies_val += accuracy
 
         txt_file = open("results/loss_val.txt", "a")
         txt_file.write("epoch {} loss {} \n".format(self.epoch, loss.item()))
         txt_file.close()
+
+        if iteration % self.print_freq == 0:
+            print("iteration {it}/{total} valid accuracy {acc:.4f}({mean_acc:.4f}) loss {loss}".format(it=iteration,
+                                                                                                       total=self.valid_size // 100,
+                                                                                                       acc=accuracy,
+                                                                                                       mean_acc=self.accuracies_val / float(
+                                                                                                           iteration + 1),
+                                                                                                       loss=loss.item()))
 
     def test_run(self, testloader):
         self.accuracies_test = []
@@ -120,9 +144,24 @@ class Trainer:
 
     def save_checkpoint(self, accuracy):
         state_dict = {'epoch': self.epoch + 1,
-                       'state_dict': self.model.state_dict(),
-                       'optim_dict' : self.optimizer.state_dict()}
-        torch.save(state_dict, os.path.join(self.checkpoints_path, "last_{:+.2f}.pth".format(accuracy)))
+                      'state_dict': self.model.state_dict(),
+                      'optim_dict': self.optimizer.state_dict()}
+        torch.save(state_dict, os.path.join(self.checkpoints_path, "last.pth"))
+
+        if self.last_accuracy > 0:
+            os.remove(os.path.join(self.checkpoints_path, "last.pth"))
+            self.last_accuracy = accuracy
+
         if accuracy > self.best_accuracy:
+            if self.best_accuracy > 0:
+                os.remove(os.path.join(self.checkpoints_path, "best_{acc:.4f}.pth".format(acc=self.best_accuracy)))
             self.best_accuracy = accuracy
-            shutil.copyfile(os.path.join(self.checkpoints_path, "best_{:+.2f}.pth".format(accuracy)))
+            torch.save(state_dict, os.path.join(self.checkpoints_path, "best_{acc:.4f}.pth".format(acc=accuracy)))
+
+    def load_checkpoint(self, checkpoint_path, continue_from_epoch=True):
+        state = torch.load(checkpoint_path)
+        self.model.load_state_dict(state['state_dict'])
+        self.optimizer.load_state_dict(state['optim_dict'])
+
+        if continue_from_epoch:
+            self.epoch = state['epoch']

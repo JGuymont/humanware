@@ -52,14 +52,15 @@ if __name__ == '__main__':
         #    transforms.RandomRotation(conf.getint("randomRotation_degrees")),
         # ], p=0.5),
         transforms.RandomCrop(54),
-        transforms.Resize((224,224)),
+        transforms.Resize((224, 224)),
         transforms.ToTensor(),
-        # transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
+        transforms.Normalize([0.39954964, 0.3988817, 0.41280591], [0.23269807, 0.2355513, 0.23580605])
     ])
 
     test_transforms = transforms.Compose([
-        transforms.Resize((54, 54)),
+        transforms.Resize((224, 224)),
         transforms.ToTensor(),
+        transforms.Normalize([0.39954964, 0.3988817, 0.41280591], [0.23269807, 0.2355513, 0.23580605])
     ])
 
     train_data = SVHNDataset(
