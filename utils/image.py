@@ -33,15 +33,18 @@ class SVHNImage:
         return image
 
     def image(self):
-        return transforms.ToTensor()(self._image)
+        transform = transforms.Compose([transforms.ToTensor()])
+        return transform(self._image)
     
     def bounded_image(self):
+        transform = transforms.Compose([transforms.ToTensor()])
         image = self._crop(self._image)
-        return transforms.ToTensor()(image)
+        return transform(image)
     
     def cropped_image(self):
+        transform = transforms.Compose([transforms.Resize((64, 64)), transforms.ToTensor()])
         image = self._crop_expand(self._image)
-        return transforms.ToTensor()(image)
+        return transform(image)
     
     def transformed_image(self):
         return self._transform(self._crop_expand(self._image))
