@@ -31,7 +31,7 @@ class SVHNDataset(Dataset):
             img = self._crop(img, min_left, min_top, max_left, max_top)
         img = self._transform(img) if self._transform else np.array(img)
         
-        n_digits = len(labels) if len(labels) <= 5 else 5
+        n_digits = len(labels) if len(labels) <= 5 else 6
         return img, n_digits-1
 
     def __len__(self):
