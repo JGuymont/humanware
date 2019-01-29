@@ -1,16 +1,15 @@
-import torch.nn as nn
-from torch.utils.data import Dataset
-from torchvision import transforms
-import pandas as pd
+"""
+Abstract data class for the SVHN dataset.
+"""
 import pickle as pkl
-from skimage import io
 import numpy as np
+from torch.utils.data import Dataset
 from PIL import Image
 
 
 class SVHNDataset(Dataset):
 
-    def __init__(self, metadata_path, data_dir, crop_percent, transform=None):
+    def __init__(self, metadata_path, data_dir, crop_percent=None, transform=None):
         self._crop_percent = crop_percent
         self._metadata = self._load_pickle(metadata_path)
         self._data_dir = data_dir
@@ -28,7 +27,8 @@ class SVHNDataset(Dataset):
         max_top = max(meta['top']) + max(meta['height'])
         
         img = Image.open(img_name)
-        img = self._crop(img, min_left, min_top, max_left, max_top)
+        if self._crop_percent:
+            img = self._crop(img, min_left, min_top, max_left, max_top)
         img = self._transform(img) if self._transform else np.array(img)
         
         n_digits = len(labels) if len(labels) <= 5 else 5
@@ -52,3 +52,4 @@ class SVHNDataset(Dataset):
             (1 + self._crop_percent) * max_left, 
             (1 + self._crop_percent) * max_top))
         return image
+    
