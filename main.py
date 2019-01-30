@@ -6,7 +6,6 @@ from datetime import datetime
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from utils.data import SVHNDataset
-from utils import visualization
 from trainer import Trainer
 from configparser import ConfigParser
 
@@ -91,4 +90,4 @@ if __name__ == '__main__':
     os.makedirs(conf.get("model", "checkpoints_path"), exist_ok=True)
 
     trainer = Trainer(conf)
-    trainer.train_model(trainloader, devloader)
+    trainer.train_model(testloader, testloader)

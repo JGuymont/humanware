@@ -46,7 +46,7 @@ class ResNet(nn.Module):
     """
     def __init__(self, config, block=ResidualBlock):
         super(ResNet, self).__init__()
-        layers = json.loads(config["model"].get("layers"))
+        layers = json.loads(config.get("layers"))
         self.in_channels = 16
         self.conv = conv3x3(3, 16)
         self.bn = nn.BatchNorm2d(16)
