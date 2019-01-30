@@ -51,7 +51,7 @@ if __name__ == '__main__':
         #                           saturation=conf.getfloat("colorJitter_saturation")),
         #    transforms.RandomRotation(conf.getint("randomRotation_degrees")),
         # ], p=0.5),
-        transforms.RandomResizedCrop(54),
+        transforms.RandomCrop(54),
         transforms.ToTensor(),
         # transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
     ])
