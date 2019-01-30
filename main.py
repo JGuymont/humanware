@@ -90,4 +90,4 @@ if __name__ == '__main__':
     os.makedirs(conf.get("model", "checkpoints_path"), exist_ok=True)
 
     trainer = Trainer(conf)
-    trainer.train_model(testloader, testloader)
+    trainer.train_model(trainloader, devloader)
