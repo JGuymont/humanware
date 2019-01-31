@@ -85,8 +85,8 @@ if __name__ == '__main__':
 
     os.makedirs('results', exist_ok=True)
 
-    args.checkpoints_path = os.path.join(conf.get("model", "checkpoints_path"), conf.get("model", "name"),
-                                         datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+    conf.set("model", "checkpoints_path", os.path.join(conf.get("model", "checkpoints_path"), conf.get("model", "name"),
+                                         datetime.now().strftime('%Y-%m-%d_%H-%M-%S')))
     os.makedirs(conf.get("model", "checkpoints_path"), exist_ok=True)
 
     trainer = Trainer(conf)
