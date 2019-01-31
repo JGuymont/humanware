@@ -85,7 +85,7 @@ if __name__ == '__main__':
 
     os.makedirs('results', exist_ok=True)
 
-    conf.set('model', 'checkpoints_path', os.path.join(
+    conf.set("model", "checkpoints_path", os.path.join(
         conf.get("model", "checkpoints_path"), 
         conf.get("model", "name"),
         datetime.now().strftime('%Y-%m-%d_%H-%M-%S')))
