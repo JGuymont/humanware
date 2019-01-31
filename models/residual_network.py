@@ -1,7 +1,7 @@
 """
 Deep Residual Networw implementation in Pytorch
 """
-import torch
+import json
 from torch import nn
 
 def conv3x3(in_channels, out_channels, stride=1):
@@ -44,8 +44,9 @@ class ResNet(nn.Module):
     Args:
         layers (list of int): Number of blocks at each layers
     """
-    def __init__(self, conf, block=ResidualBlock, layers=[2, 2, 2]):
+    def __init__(self, config, block=ResidualBlock):
         super(ResNet, self).__init__()
+        layers = json.loads(config.get("layers"))
         self.in_channels = 16
         self.conv = conv3x3(3, 16)
         self.bn = nn.BatchNorm2d(16)
@@ -54,7 +55,7 @@ class ResNet(nn.Module):
         self.layer2 = self.make_layer(block, 32, layers[1], 2)
         self.layer3 = self.make_layer(block, 64, layers[2], 2)
         self.avg_pool = nn.AvgPool2d(8)
-        self.fc = nn.Linear(64, conf.getint("num_classes"))
+        self.fc = nn.Linear(64, config.getint("num_classes"))
 
     def make_layer(self, block, out_channels, blocks, stride=1):
         downsample = None

@@ -3,11 +3,22 @@
 ## Running the experiment
 ```
 python split_data.py --train_pct 0.7 --valid_pct 0.2 --test_pct 0.1
-python main.py --model [LargeCNN, MediumCNN, SmallCNN]
+python main.py [path/to/config]
 ```
 Note: 
 1. the images need to be in `./data/SVNH/train/`
 2. The model `LargeCNN` is the model describe in Goodfellow et al, 2013
+
+<<<<<<< HEAD
+## Helios
+```
+msub run.pbs
+=======
+## Watching a file while running a job
+```
+$ watch tail -n 20 $(ls -rt | grep .out | tail -n 1)
+>>>>>>> ede2f5dc6ced3096bbf0141aa374b75a6be2f176
+```
 
 ## Data
 ```
@@ -15,6 +26,12 @@ cd Humanware-block1
 cp '/rap/jvb-000-aa/COURS2019/etudiants/data/humanware/SVHN/train_metadata.pkl' './data/SVHN/'
 cp '/rap/jvb-000-aa/COURS2019/etudiants/data/humanware/SVHN/train.tar.gz' './data/SVHN/'
 tar -xzf $HOME'/digit-detection/data/SVHN/train.tar.gz' -C './data/SVHN/'
+scp user23@helios.calculquebec.ca:/rap/jvb-000-aa/COURS2019/etudiants/data/humanware/SVHN/train.tar.gz C:\Users\pc\university\IFT6759\Humanware-block1\data\SVHN
+```
+
+## Source the common.env file in your ~/.bashrc:
+```
+$ echo source /rap/jvb-000-aa/COURS2019/etudiants/common.env >> ~/.bashrc
 ```
 
 ## Container

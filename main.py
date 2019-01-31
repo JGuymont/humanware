@@ -6,7 +6,6 @@ from datetime import datetime
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from utils.data import SVHNDataset
-from utils import visualization
 from trainer import Trainer
 from configparser import ConfigParser
 
@@ -88,8 +87,8 @@ if __name__ == '__main__':
 
     os.makedirs('results', exist_ok=True)
 
-    args.checkpoints_path = os.path.join(conf.get("model", "checkpoints_path"), conf.get("model", "name"),
-                                         datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+    conf.set("model", "checkpoints_path", os.path.join(conf.get("model", "checkpoints_path"), conf.get("model", "name"),
+                                         datetime.now().strftime('%Y-%m-%d_%H-%M-%S')))
     os.makedirs(conf.get("model", "checkpoints_path"), exist_ok=True)
 
     trainer = Trainer(conf)
