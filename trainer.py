@@ -14,6 +14,14 @@ import json
 import time
 
 class Trainer:
+    """
+    Optimize the parameters of a model by minimizing
+    an objective functions.
+
+    Args
+        config (.INI file): Configuration file containing the
+            hyperparameters of the model.
+    """
     def __init__(self, conf):
         model_conf = conf["model"]
         self.epochs = model_conf.getint("n_epochs")
@@ -57,7 +65,8 @@ class Trainer:
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
-            
+
+
             train_acc, train_loss = self.evaluate(trainloader)
             valid_acc, valid_loss = self.evaluate(devloader)
 
