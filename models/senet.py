@@ -386,6 +386,8 @@ def senet(conf):
     senet = None
     if conf.getboolean("pretrained"):
         senet = senet154(pretrained="imagenet", pth_path=conf.get("pretrained_pth_path"))
+        #for param in senet.parameters():
+        #    param.requires_grad = False
         senet.last_linear = nn.Sequential(senet.last_linear, nn.Linear(senet.last_linear.out_features, conf.getint("num_classes")))
     else:
         senet = senet154(conf.getint("num_classes"), pretrained=None, pth_path=conf.get("pretrained_chk_path"))

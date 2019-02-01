@@ -22,7 +22,7 @@ class Trainer:
         self.batch_size = self.model_conf.getint("batch_size")
         self.criterion = nn.CrossEntropyLoss()
         self.device = torch.device(self.model_conf.get('device'))
-        self.model = eval(self.model_conf.get('name'))(self.model_conf).to(self.device)
+        self.model = nn.DataParallel(eval(self.model_conf.get('name'))(self.model_conf).to(self.device))
         if self.model_conf.get("optim") == 'SGD':
             self.optimizer = optim.SGD(
                 self.model.parameters(), 
@@ -36,7 +36,8 @@ class Trainer:
                 betas=json.loads(conf["model"].get("betas")))
         else:
             raise ValueError('Only SGD is supported')
-        self.checkpoints_path = self.model_conf.get("checkpoints_path")
+        self.checkpoints_path = conf.get("paths", "checkpoints")
+        self.results_path = conf.get("paths", "results")
         self.best_accuracy = 0
         self.train_size = None
         self.valid_size = None
@@ -63,14 +64,14 @@ class Trainer:
 
                 if iteration % self.iteration_print_freq == 0:
                     pred = np.argmax(output.detach().cpu().numpy(), axis=1)
-                    real = y.detach().cpu().numpy()
+                    real = y_batch.detach().cpu().numpy()
                     correct = np.sum(pred == real)
                     accuracies_train += correct
 
-                    print("Iterration: {:.0f} | Train Loss: {:.3f} | Train Accuracy: {:.3f}"
+                    print("Iterration: {:.0f} | Train Loss: {:.3f} | Train Accuracy: {:.3f} ({.3f})"
                           .format(iteration, loss,
-                                  correct / self.batch_size,
-                                  accuracies_train / (iteration * self.batch_size)))
+                                  correct * 100 / self.batch_size,
+                                  accuracies_train * 100 / ((iteration + 1) * self.batch_size)))
 
             
             train_acc, train_loss = self.evaluate(trainloader)
@@ -105,19 +106,19 @@ class Trainer:
         return round(accuracy, 4), np.mean(losses)
 
     def _log_epoch(self, train_acc, train_loss, valid_acc, valid_loss):
-        txt_file = open("results/train_accuracies.txt", "a")
+        txt_file = open(os.path.join(self.reuslts_path, "train_accuracies.txt"), "a")
         txt_file.write("epoch {} accuracy {} \n".format(self.epoch, train_acc))
         txt_file.close()
 
-        txt_file = open("results/train_loss.txt", "a")
+        txt_file = open(os.path.join(self.results_path, "train_loss.txt"), "a")
         txt_file.write("epoch {} loss {} \n".format(self.epoch, train_loss))
         txt_file.close()
 
-        txt_file = open("results/val_accuracies.txtit", "a")
+        txt_file = open(os.path.join(self.reuslts_path, "val_accuracies.txt"), "a")
         txt_file.write("epoch {} accuracy {} \n".format(self.epoch, valid_acc))
         txt_file.close()
 
-        txt_file = open("results/loss_val.txt", "a")
+        txt_file = open(os.path.join(self.results_path, "loss_val.txt"), "a")
         txt_file.write("epoch {} loss {} \n".format(self.epoch, valid_loss))
         txt_file.close()
 
@@ -133,10 +134,10 @@ class Trainer:
             'state_dict': self.model.state_dict(),
             'optim_dict' : self.optimizer.state_dict()
         }
-        torch.save(state_dict, os.path.join(self.checkpoints_path, "last_{:+.2f}.pth".format(accuracy)))
+        torch.save(state_dict, os.path.join(self.checkpoints_path, "last.pth".format(accuracy)))
         if accuracy > self.best_accuracy:
+            if self.best_accuracy > 0:
+                os.remove(os.path.join(self.checkpoints_path, "best_{acc:.4f}.pth".format(acc=self.best_accuracy)))
             self.best_accuracy = accuracy
-            shutil.copyfile(
-                src=os.path.join(self.checkpoints_path, "last_{:+.2f}.pth".format(accuracy)),
-                dst=os.path.join(self.checkpoints_path, "best_{:+.2f}.pth".format(accuracy))
-            )
+            torch.save(state_dict, os.path.join(self.checkpoints_path, "best_{acc:.4f}.pth".format(acc=accuracy)))
+            self.best_accuracy = accuracy

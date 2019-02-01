@@ -38,7 +38,7 @@ if __name__ == '__main__':
     args = argparser()
     conf = ConfigParser()
     conf.read(args.config)
-    conf.set('model', 'device', 'cuda:0' if torch.cuda.is_available() else 'cpu')
+    conf.set('model', 'device', 'cuda' if torch.cuda.is_available() else 'cpu')
 
     train_transforms = transforms.Compose([
         transforms.Resize((64, 64)),
@@ -85,11 +85,13 @@ if __name__ == '__main__':
     devloader = DataLoader(valid_data, batch_size=100, num_workers=4, pin_memory=True)
     testloader = DataLoader(test_data, batch_size=100, num_workers=4, pin_memory=True)
 
-    os.makedirs('results', exist_ok=True)
-
-    conf.set("model", "checkpoints_path", os.path.join(conf.get("model", "checkpoints_path"), conf.get("model", "name"),
+    conf.set("paths", "results", os.path.join(conf.get("paths", "results"), conf.get("model", "name"),
                                          datetime.now().strftime('%Y-%m-%d_%H-%M-%S')))
-    os.makedirs(conf.get("model", "checkpoints_path"), exist_ok=True)
+    os.makedirs(conf.get("paths", 'results'), exist_ok=True)
+
+    conf.set("paths", "checkpoints_path", os.path.join(conf.get("paths", "checkpoints_path"), conf.get("model", "name"),
+                                         datetime.now().strftime('%Y-%m-%d_%H-%M-%S')))
+    os.makedirs(conf.get("paths", "checkpoints_path"), exist_ok=True)
 
     trainer = Trainer(conf)
     trainer.train_model(trainloader, devloader)
