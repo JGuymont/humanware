@@ -50,10 +50,11 @@ class Trainer:
         """
         start_time = time.time()
 
-        for iteration in range(self.epochs):
+        for self.epoch in range(self.epochs):
             self.model.train()
-            accuracies_train = 0
-            for x_batch, y_batch in trainloader:
+            accuracy_train = 0
+            loss_train = 0
+            for iteration, (x_batch, y_batch) in enumerate(trainloader):
                 x_batch = x_batch.to(self.device)
                 y_batch = y_batch.to(self.device)
                 output = self.model(x_batch)
@@ -62,19 +63,23 @@ class Trainer:
                 loss.backward()
                 self.optimizer.step()
 
+                loss_train += loss
+
+                pred = np.argmax(output.detach().cpu().numpy(), axis=1)
+                real = y_batch.detach().cpu().numpy()
+                correct = np.sum(pred == real)
+                accuracy_train += correct
+
+                #if True:
                 if iteration % self.iteration_print_freq == 0:
-                    pred = np.argmax(output.detach().cpu().numpy(), axis=1)
-                    real = y_batch.detach().cpu().numpy()
-                    correct = np.sum(pred == real)
-                    accuracies_train += correct
-
-                    print("Iterration: {:.0f} | Train Loss: {:.3f} | Train Accuracy: {:.3f} ({.3f})"
-                          .format(iteration, loss,
+                    print("Iterration: {:.0f}/{} | Train Loss: {:.4f} ({:.4f}) | Train Accuracy: {:.2f} ({:.4f})"
+                          .format(iteration, len(trainloader.dataset), loss, loss_train / (iteration + 1),
                                   correct * 100 / self.batch_size,
-                                  accuracies_train * 100 / ((iteration + 1) * self.batch_size)))
+                                  accuracy_train * 100 / ((iteration + 1) * self.batch_size)))
 
-            
-            train_acc, train_loss = self.evaluate(trainloader)
+            train_acc = accuracy_train * 100 / ((iteration + 1) * self.batch_size)
+            train_loss = loss_train / (iteration + 1)
+            # train_acc, train_loss = self.evaluate(trainloader)
             valid_acc, valid_loss = self.evaluate(devloader)
 
             self.save_checkpoint(valid_acc)
@@ -84,29 +89,28 @@ class Trainer:
             print(' [*] Epoch: {:.0f} | Loss: {:.3f} | Train acc: {:.2f} | Dev acc: {:.2f} | time: {} sec.'.format(
                 self.epoch+1, train_loss, train_acc, valid_acc, round(time.time() - start_time)))
 
-            self.epoch += 1
-
     def evaluate(self, dataloader):
         self.model.eval()
         losses = []
         total, correct = 0., 0.
-        for (inputs, targets) in dataloader:
-            inputs = inputs.to(self.device)
-            targets = targets.to(self.device)
+        with torch.no_grad():
+            for (inputs, targets) in dataloader:
+                inputs = inputs.to(self.device)
+                targets = targets.to(self.device)
 
-            outputs = self.model(inputs)
-            loss = self.criterion(outputs, targets)
-            losses.append(loss.item())
+                outputs = self.model(inputs)
+                loss = self.criterion(outputs, targets)
+                losses.append(loss.item())
 
-            _, predicted = torch.max(outputs.data, 1)
-            total += targets.size(0)
-            correct += predicted.eq(targets.data).cpu().sum().item()
+                _, predicted = torch.max(outputs.data, 1)
+                total += targets.size(0)
+                correct += predicted.eq(targets.data).cpu().sum().item()
 
         accuracy = 100. * correct / total
         return round(accuracy, 4), np.mean(losses)
 
     def _log_epoch(self, train_acc, train_loss, valid_acc, valid_loss):
-        txt_file = open(os.path.join(self.reuslts_path, "train_accuracies.txt"), "a")
+        txt_file = open(os.path.join(self.results_path, "train_accuracies.txt"), "a")
         txt_file.write("epoch {} accuracy {} \n".format(self.epoch, train_acc))
         txt_file.close()
 
@@ -114,7 +118,7 @@ class Trainer:
         txt_file.write("epoch {} loss {} \n".format(self.epoch, train_loss))
         txt_file.close()
 
-        txt_file = open(os.path.join(self.reuslts_path, "val_accuracies.txt"), "a")
+        txt_file = open(os.path.join(self.results_path, "val_accuracies.txt"), "a")
         txt_file.write("epoch {} accuracy {} \n".format(self.epoch, valid_acc))
         txt_file.close()
 

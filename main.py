@@ -85,13 +85,14 @@ if __name__ == '__main__':
     devloader = DataLoader(valid_data, batch_size=100, num_workers=4, pin_memory=True)
     testloader = DataLoader(test_data, batch_size=100, num_workers=4, pin_memory=True)
 
+    datetime_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     conf.set("paths", "results", os.path.join(conf.get("paths", "results"), conf.get("model", "name"),
-                                         datetime.now().strftime('%Y-%m-%d_%H-%M-%S')))
+                                              datetime_str))
     os.makedirs(conf.get("paths", 'results'), exist_ok=True)
 
-    conf.set("paths", "checkpoints_path", os.path.join(conf.get("paths", "checkpoints_path"), conf.get("model", "name"),
-                                         datetime.now().strftime('%Y-%m-%d_%H-%M-%S')))
-    os.makedirs(conf.get("paths", "checkpoints_path"), exist_ok=True)
+    conf.set("paths", "checkpoints", os.path.join(conf.get("paths", "checkpoints"), conf.get("model", "name"),
+                                                  datetime_str))
+    os.makedirs(conf.get("paths", "checkpoints"), exist_ok=True)
 
     trainer = Trainer(conf)
     trainer.train_model(trainloader, devloader)
