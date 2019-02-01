@@ -51,6 +51,7 @@ class Trainer:
 
         for iteration in range(self.epochs):
             self.model.train()
+            accuracies_train = 0
             for x_batch, y_batch in trainloader:
                 x_batch = x_batch.to(self.device)
                 y_batch = y_batch.to(self.device)
@@ -61,7 +62,15 @@ class Trainer:
                 self.optimizer.step()
 
                 if iteration % self.iteration_print_freq == 0:
-                    print("Iterration: {:.0f} | Train Loss: {:3f}".format(iteration, loss))
+                    pred = np.argmax(output.detach().cpu().numpy(), axis=1)
+                    real = y.detach().cpu().numpy()
+                    correct = np.sum(pred == real)
+                    accuracies_train += correct
+
+                    print("Iterration: {:.0f} | Train Loss: {:.3f} | Train Accuracy: {:.3f}"
+                          .format(iteration, loss,
+                                  correct / self.batch_size,
+                                  accuracies_train / (iteration * self.batch_size)))
 
             
             train_acc, train_loss = self.evaluate(trainloader)
