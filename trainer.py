@@ -7,6 +7,7 @@ from models.large_cnn import LargeCNN
 from models.medium_cnn import MediumCNN
 from models.small_cnn import SmallCNN
 from models.residual_network import ResNet
+from models.senet import senet
 import pandas as pd
 import os
 import shutil
@@ -39,6 +40,7 @@ class Trainer:
         self.best_accuracy = 0
         self.train_size = None
         self.valid_size = None
+        self.iteration_print_freq = conf.getint("log", "iteration_print_freq")
 
     def train_model(self, trainloader, devloader):
         """
@@ -58,7 +60,7 @@ class Trainer:
                 loss.backward()
                 self.optimizer.step()
 
-                if iteration % self.model_conf.getint("iteration_print_freq"):
+                if iteration % self.iteration_print_freq == 0:
                     print("Iterration: {:.0f} | Train Loss: {:3f}".format(iteration, loss))
 
             
