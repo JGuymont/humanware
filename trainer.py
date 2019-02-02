@@ -36,6 +36,10 @@ class Trainer:
                 betas=json.loads(conf["model"].get("betas")))
         else:
             raise ValueError('Only SGD is supported')
+
+        if self.model_conf.get("checkpoint") is not None:
+            self.load_checkpoint(self.model_conf.get("checkpoint"))
+
         self.checkpoints_path = conf.get("paths", "checkpoints")
         self.results_path = conf.get("paths", "results")
         self.best_accuracy = 0
@@ -50,7 +54,7 @@ class Trainer:
         """
         start_time = time.time()
 
-        for self.epoch in range(self.epochs):
+        for self.epoch in range(self.epoch, self.epochs):
             self.model.train()
             accuracy_train = 0
             loss_train = 0
@@ -145,3 +149,11 @@ class Trainer:
             self.best_accuracy = accuracy
             torch.save(state_dict, os.path.join(self.checkpoints_path, "best_{acc:.4f}.pth".format(acc=accuracy)))
             self.best_accuracy = accuracy
+
+    def load_checkpoint(self, checkpoint_path, continue_from_epoch=True):
+        state = torch.load(checkpoint_path)
+        self.model.load_state_dict(state['state_dict'])
+        self.optimizer.load_state_dict(state['optim_dict'])
+
+        if continue_from_epoch:
+            self.epoch = state['epoch']
