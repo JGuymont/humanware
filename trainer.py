@@ -33,7 +33,7 @@ class Trainer:
             self.optimizer = optim.Adam(
                 self.model.parameters(),
                 lr=self.model_conf.getfloat("learning_rate"),
-                betas=json.loads(conf["model"].get("betas")))
+                betas=json.loads(self.model_conf.get("betas")))
         else:
             raise ValueError('Only SGD is supported')
 
