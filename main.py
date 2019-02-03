@@ -42,14 +42,14 @@ if __name__ == '__main__':
 
     train_transforms = transforms.Compose([
         transforms.Resize((64, 64)),
-        # transforms.RandomApply([
-        #    transforms.RandomAffine(degrees=conf.getint("randomAffine_degrees"),
-        #                            shear=conf.getint("randomAffine_shear")),
-        #    transforms.ColorJitter(brightness=conf.getfloat("colorJitter_brightness"),
-        #                           contrast=conf.getfloat("colorJitter_contrast"),
-        #                           saturation=conf.getfloat("colorJitter_saturation")),
-        #    transforms.RandomRotation(conf.getint("randomRotation_degrees")),
-        # ], p=0.5),
+        #transforms.RandomApply([
+        #    transforms.RandomAffine(degrees=conf.getint("preprocessing", "randomAffine_degrees"),
+        #                            shear=conf.getint("preprocessing", "randomAffine_shear")),
+        #    transforms.ColorJitter(brightness=conf.getfloat("preprocessing", "colorJitter_brightness"),
+        #                           contrast=conf.getfloat("preprocessing", "colorJitter_contrast"),
+        #                           saturation=conf.getfloat("preprocessing", "colorJitter_saturation")),
+        #    transforms.RandomRotation(conf.getint("preprocessing", "randomRotation_degrees")),
+        #], p=conf.getfloat("preprocessing", "transform_proba")),
         transforms.RandomCrop(54),
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
