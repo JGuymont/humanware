@@ -8,31 +8,32 @@ from torchvision import transforms
 from utils.data import SVHNDataset
 from trainer import Trainer
 from configparser import ConfigParser
+from models.residual_network import ResNet
 
 def argparser():
     """
     Command line argument parser
     """
     parser = argparse.ArgumentParser(description='Split metadata into train/valid/test')
-    parser.add_argument('config', type=str)
-    parser.add_argument('--train_metadata_path', type=str, default='./data/SVHN/metadata/train_metadata.pkl')
-    parser.add_argument('--valid_metadata_path', type=str, default='./data/SVHN/metadata/valid_metadata.pkl')
-    parser.add_argument('--test_metadata_path', type=str, default='./data/SVHN/metadata/test_metadata.pkl')
-    parser.add_argument('--data_dir', type=str, default='./data/SVHN/train')
-    parser.add_argument('--train_pct', type=float, default=0.7)
-    parser.add_argument('--valid_pct', type=float, default=0.2)
-    parser.add_argument('--test_pct', type=float, default=0.1)
-
-    parser.add_argument('--model', type=str, choices=['SmallCNN', 'MediumCNN', 'LargeCNN', 'ResNet'])
-    parser.add_argument('--num_classes', type=int, default=5)
-    parser.add_argument('--n_epochs', type=int, default=100)
-    parser.add_argument('--batch_size', type=int, default=128)
-    parser.add_argument('--learning_rate', type=float, default=0.001)
-    parser.add_argument('--crop_percent', type=float, default=0.3)
-    parser.add_argument('--optim', type=str, default='SGD')
-    parser.add_argument('--device', type=str, default='cpu')
+    parser.add_argument('--config', type=str)
+    parser.add_argument('--task', type=str, default='train')
     
     return parser.parse_args()
+
+def restore_model(self, epoch):
+    """Retore the model parameters
+
+    Args
+        epoch: (int) epoch at which the model has been 
+            trained and for which the model paramers
+            should be restored
+    """
+    path = '{}{}.pt'.format(self.config['model']['path'], epoch)
+    checkpoint = torch.load(path)
+    self.load_state_dict(checkpoint['model_state_dict'])
+    self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    epoch = checkpoint['epoch']
+    return epoch
 
 if __name__ == '__main__':
     args = argparser()
@@ -52,7 +53,7 @@ if __name__ == '__main__':
         #], p=conf.getfloat("preprocessing", "transform_proba")),
         transforms.RandomCrop(54),
         transforms.ToTensor(),
-        transforms.Normalize([0.39954964, 0.3988817, 0.41280591], [0.23269807, 0.2355513, 0.23580605])
+        #transforms.Normalize([0.39954964, 0.3988817, 0.41280591], [0.23269807, 0.2355513, 0.23580605])
     ])
 
     test_transforms = transforms.Compose([
@@ -78,18 +79,48 @@ if __name__ == '__main__':
         crop_percent=conf.getfloat("preprocessing", "crop_percent"),
         transform=test_transforms)
 
-    
-    trainloader = DataLoader(train_data, batch_size=conf.getint("model", "batch_size"), shuffle=True, num_workers=4, pin_memory=True)
-    devloader = DataLoader(valid_data, batch_size=100, num_workers=4, pin_memory=True)
-    testloader = DataLoader(test_data, batch_size=100, num_workers=4, pin_memory=True)
-
     os.makedirs('results', exist_ok=True)
 
-    conf.set("model", "checkpoints_path", os.path.join(
-        conf.get("model", "checkpoints_path"), 
-        conf.get("model", "name"),
-        datetime.now().strftime('%Y-%m-%d_%H-%M-%S')))
-    os.makedirs(conf.get("model", "checkpoints_path"), exist_ok=True)
+    
 
-    trainer = Trainer(conf)
-    trainer.train_model(trainloader, devloader)
+    if args.task == 'train':
+        trainloader = DataLoader(
+            train_data, 
+            batch_size=conf.getint("model", "batch_size"), 
+            shuffle=True, 
+            num_workers=4, 
+            pin_memory=True)
+        devloader = DataLoader(valid_data, batch_size=100, num_workers=4, pin_memory=True)
+        
+        conf.set("model", "checkpoints_path", os.path.join(
+            conf.get("model", "checkpoints_path"), 
+            conf.get("model", "name"),
+            datetime.now().strftime('%Y-%m-%d_%H-%M-%S')))
+            
+        os.makedirs(conf.get("model", "checkpoints_path"), exist_ok=True)
+        
+        trainer = Trainer(conf)
+        trainer.train_model(trainloader, devloader)
+    
+    elif args.task == 'eval':
+        model = eval(conf['model'].get('name'))(conf['model']).to(conf['model']['device'])
+        checkpoint = torch.load(PATH_TO_BEST_CHECKPOINT)
+        model.load_state_dict(checkpoint['state_dict'])
+
+        testloader = DataLoader(test_data, batch_size=100, num_workers=4, pin_memory=True)
+        model.eval()
+        total, correct = 0., 0.
+        for (inputs, targets) in testloader:
+            inputs = inputs.to(conf['model']['device'])
+            targets = targets.to(conf['model']['device'])
+
+            outputs = model(inputs)
+            _, predicted = torch.max(outputs.data, 1)
+            total += targets.size(0)
+            correct += predicted.eq(targets.data).cpu().sum().item()
+
+        accuracy = 100. * correct / total
+        print(round(accuracy, 4))
+        
+
+    
