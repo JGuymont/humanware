@@ -8,6 +8,7 @@ from torchvision import transforms
 from utils.data import SVHNDataset
 from trainer import Trainer
 from configparser import ConfigParser
+from models.residual_network import ResNet
 
 def argparser():
     """
@@ -15,6 +16,7 @@ def argparser():
     """
     parser = argparse.ArgumentParser(description='Split metadata into train/valid/test')
     parser.add_argument('--config', type=str)
+
     parser.add_argument('--train_metadata_path', type=str, default='./data/SVHN/metadata/train_metadata.pkl')
     parser.add_argument('--valid_metadata_path', type=str, default='./data/SVHN/metadata/valid_metadata.pkl')
     parser.add_argument('--test_metadata_path', type=str, default='./data/SVHN/metadata/test_metadata.pkl')
@@ -31,6 +33,9 @@ def argparser():
     parser.add_argument('--crop_percent', type=float, default=0.3)
     parser.add_argument('--optim', type=str, default='SGD')
     parser.add_argument('--device', type=str, default='cpu')
+
+    parser.add_argument('--task', type=str, default='train')
+
     
     return parser.parse_args()
 
@@ -80,10 +85,17 @@ if __name__ == '__main__':
         crop_percent=conf.getfloat("preprocessing", "crop_percent"),
         transform=test_transforms)
 
-    
     trainloader = DataLoader(train_data, batch_size=conf.getint("model", "batch_size"), shuffle=True, num_workers=4, pin_memory=True)
     devloader = DataLoader(valid_data, batch_size=16, num_workers=4, pin_memory=True)
     testloader = DataLoader(test_data, batch_size=16, num_workers=4, pin_memory=True)
+
+    os.makedirs('results', exist_ok=True)
+
+    trainloader = DataLoader(
+        train_data, batch_size=conf.getint("model", "batch_size"), shuffle=True, num_workers=4, pin_memory=True)
+    devloader = DataLoader(valid_data, batch_size=100, num_workers=4, pin_memory=True)
+    testloader = DataLoader(test_data, batch_size=100, num_workers=4, pin_memory=True)
+
 
     datetime_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     conf.set("paths", "results", os.path.join(conf.get("paths", "results"), conf.get("model", "name"),
@@ -96,3 +108,9 @@ if __name__ == '__main__':
 
     trainer = Trainer(conf)
     trainer.train_model(trainloader, devloader)
+    
+    
+    
+        
+
+    
