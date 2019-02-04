@@ -82,10 +82,9 @@ class Trainer:
                 correct = np.sum(pred == real)
                 accuracy_train += correct
 
-                #if True:
                 if iteration % self.iteration_print_freq == 0:
-                    print("Iterration: {:.0f}/{} | Train Loss: {:.4f} ({:.4f}) | Train Accuracy: {:.2f} ({:.4f})"
-                          .format(iteration, len(trainloader.dataset), loss, loss_train / (iteration + 1),
+                    print("Iteration: {:.0f}/{} | Train Loss: {:.4f} ({:.4f}) | Train Accuracy: {:.2f} ({:.4f})"
+                          .format(iteration, len(trainloader), loss, loss_train / (iteration + 1),
                                   correct * 100 / self.batch_size,
                                   accuracy_train * 100 / ((iteration + 1) * self.batch_size)))
 
