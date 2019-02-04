@@ -39,7 +39,7 @@ if __name__ == '__main__':
     args = argparser()
     conf = ConfigParser()
     conf.read(args.config)
-    conf.set('model', 'device', 'cuda:0' if torch.cuda.is_available() else 'cpu')
+    conf.set('model', 'device', 'cuda' if torch.cuda.is_available() else 'cpu')
 
     train_transforms = transforms.Compose([
         transforms.Resize((64, 64)),
@@ -52,13 +52,15 @@ if __name__ == '__main__':
         #    transforms.RandomRotation(conf.getint("preprocessing", "randomRotation_degrees")),
         #], p=conf.getfloat("preprocessing", "transform_proba")),
         transforms.RandomCrop(54),
+        transforms.Resize((224, 224)),
         transforms.ToTensor(),
-        #transforms.Normalize([0.39954964, 0.3988817, 0.41280591], [0.23269807, 0.2355513, 0.23580605])
+        transforms.Normalize([0.39954964, 0.3988817, 0.41280591], [0.23269807, 0.2355513, 0.23580605])
     ])
 
     test_transforms = transforms.Compose([
-        transforms.Resize((54, 54)),
+        transforms.Resize((224, 224)),
         transforms.ToTensor(),
+        transforms.Normalize([0.39954964, 0.3988817, 0.41280591], [0.23269807, 0.2355513, 0.23580605])
     ])
 
     train_data = SVHNDataset(
@@ -81,46 +83,25 @@ if __name__ == '__main__':
 
     os.makedirs('results', exist_ok=True)
 
+    trainloader = DataLoader(
+        train_data, batch_size=conf.getint("model", "batch_size"), shuffle=True, num_workers=4, pin_memory=True)
+    devloader = DataLoader(valid_data, batch_size=100, num_workers=4, pin_memory=True)
+    testloader = DataLoader(test_data, batch_size=100, num_workers=4, pin_memory=True)
+
+    datetime_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    conf.set("paths", "results", os.path.join(conf.get("paths", "results"), conf.get("model", "name"),
+                                              datetime_str))
+    os.makedirs(conf.get("paths", 'results'), exist_ok=True)
+
+    conf.set("paths", "checkpoints", os.path.join(conf.get("paths", "checkpoints"), conf.get("model", "name"),
+                                                  datetime_str))
+    os.makedirs(conf.get("paths", "checkpoints"), exist_ok=True)
+
+    trainer = Trainer(conf)
+    trainer.train_model(trainloader, devloader)
     
-
-    if args.task == 'train':
-        trainloader = DataLoader(
-            train_data, 
-            batch_size=conf.getint("model", "batch_size"), 
-            shuffle=True, 
-            num_workers=4, 
-            pin_memory=True)
-        devloader = DataLoader(valid_data, batch_size=100, num_workers=4, pin_memory=True)
-        
-        conf.set("model", "checkpoints_path", os.path.join(
-            conf.get("model", "checkpoints_path"), 
-            conf.get("model", "name"),
-            datetime.now().strftime('%Y-%m-%d_%H-%M-%S')))
-            
-        os.makedirs(conf.get("model", "checkpoints_path"), exist_ok=True)
-        
-        trainer = Trainer(conf)
-        trainer.train_model(trainloader, devloader)
     
-    elif args.task == 'eval':
-        model = eval(conf['model'].get('name'))(conf['model']).to(conf['model']['device'])
-        checkpoint = torch.load(PATH_TO_BEST_CHECKPOINT)
-        model.load_state_dict(checkpoint['state_dict'])
-
-        testloader = DataLoader(test_data, batch_size=100, num_workers=4, pin_memory=True)
-        model.eval()
-        total, correct = 0., 0.
-        for (inputs, targets) in testloader:
-            inputs = inputs.to(conf['model']['device'])
-            targets = targets.to(conf['model']['device'])
-
-            outputs = model(inputs)
-            _, predicted = torch.max(outputs.data, 1)
-            total += targets.size(0)
-            correct += predicted.eq(targets.data).cpu().sum().item()
-
-        accuracy = 100. * correct / total
-        print(round(accuracy, 4))
+    
         
 
     
