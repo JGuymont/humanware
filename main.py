@@ -90,7 +90,6 @@ class CNN:
         txt_file.write("epoch {} loss {} \n".format(self.epoch, loss.item()))
         txt_file.close()
 
-    def validation(self):
         self.accuracies_val = []
         with torch.no_grad():
             for x_batch, y_batch in tqdm(self.val_loader):
@@ -140,5 +139,5 @@ if __name__ == '__main__':
     if not os.path.isdir('results'):
         os.mkdir('results')
 
-    trainer = CNN(32, model='ModelPaper', lr=0.001, total_epochs=150)
+    trainer = CNN(32, model='ModelPaper', lr=0.005, total_epochs=150)
     trainer.train_model()
