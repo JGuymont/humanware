@@ -2,3 +2,7 @@
 *
 # Except this file
 !.gitignore
+train
+train.tar.gz
+train_metadata.pkl
+metadata
