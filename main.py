@@ -20,21 +20,6 @@ def argparser():
     
     return parser.parse_args()
 
-def restore_model(self, epoch):
-    """Retore the model parameters
-
-    Args
-        epoch: (int) epoch at which the model has been 
-            trained and for which the model paramers
-            should be restored
-    """
-    path = '{}{}.pt'.format(self.config['model']['path'], epoch)
-    checkpoint = torch.load(path)
-    self.load_state_dict(checkpoint['model_state_dict'])
-    self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-    epoch = checkpoint['epoch']
-    return epoch
-
 if __name__ == '__main__':
     args = argparser()
     conf = ConfigParser()
