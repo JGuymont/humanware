@@ -6,106 +6,109 @@ import torchvision
 import torch
 import torch.nn.functional as F
 
-class LargeCNN(nn.Module):
+# from https://github.com/pytorch/pytorch/issues/805
+# not used - but left here for reference on how to make Maxout units like in Goodfellow et al, 2013
+class Maxout(nn.Module):
+    def __init__(self, pool_size):
+        super().__init__()
+        self._pool_size = pool_size
+
+    def forward(self, x):
+        assert x.shape[-1] % self._pool_size == 0, \
+            'Wrong input last dim size ({}) for Maxout({})'.format(x.shape[-1], self._pool_size)
+        m, i = x.view(*x.shape[:-1], x.shape[-1] // self._pool_size, self._pool_size).max(2)
+        return m
+
+class CNNpaper(nn.Module):
 
     def __init__(self, conf):
-        super(LargeCNN, self).__init__()
+        super(CNNpaper, self).__init__()
 
-        hidden1 = nn.Sequential(
-            nn.Conv2d(in_channels=3, out_channels=48, kernel_size=5, padding=2),
-            nn.BatchNorm2d(num_features=48),
+        self.conv1 = nn.Sequential(
+            nn.Conv2d(3, 48, 5, padding=2),
+            nn.BatchNorm2d(48),
+            # Relu (min = 0) followed by maxpool2d is similar to maxout
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2, padding=1),
+            nn.MaxPool2d(2, 2, 1),
             nn.Dropout(0.2)
         )
-        hidden2 = nn.Sequential(
-            nn.Conv2d(in_channels=48, out_channels=64, kernel_size=5, padding=2),
-            nn.BatchNorm2d(num_features=64),
+        self.conv2 = nn.Sequential(
+            nn.Conv2d(48, 64, 5, padding=2),
+            nn.BatchNorm2d(64),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=1, padding=1),
+            nn.MaxPool2d(2, 1, 1),
             nn.Dropout(0.2)
         )
-        hidden3 = nn.Sequential(
-            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=5, padding=2),
-            nn.BatchNorm2d(num_features=128),
+        self.conv3 = nn.Sequential(
+            nn.Conv2d(64, 128, 5, padding=2),
+            nn.BatchNorm2d(128),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2, padding=1),
+            nn.MaxPool2d(2, 2, 1),
             nn.Dropout(0.2)
         )
-        hidden4 = nn.Sequential(
-            nn.Conv2d(in_channels=128, out_channels=160, kernel_size=5, padding=2),
-            nn.BatchNorm2d(num_features=160),
+        self.conv4 = nn.Sequential(
+            nn.Conv2d(128, 160, 5, padding=2),
+            nn.BatchNorm2d(160),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=1, padding=1),
+            nn.MaxPool2d(2, 1, 1),
             nn.Dropout(0.2)
         )
-        hidden5 = nn.Sequential(
-            nn.Conv2d(in_channels=160, out_channels=192, kernel_size=5, padding=2),
-            nn.BatchNorm2d(num_features=192),
+        self.conv5 = nn.Sequential(
+            nn.Conv2d(160, 192, 5, padding=2),
+            nn.BatchNorm2d(192),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2, padding=1),
+            nn.MaxPool2d(2, 2, 1),
             nn.Dropout(0.2)
         )
-        hidden6 = nn.Sequential(
-            nn.Conv2d(in_channels=192, out_channels=192, kernel_size=5, padding=2),
-            nn.BatchNorm2d(num_features=192),
+        self.conv6 = nn.Sequential(
+            nn.Conv2d(192, 192, 5, padding=2),
+            nn.BatchNorm2d(192),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=1, padding=1),
+            nn.MaxPool2d(2, 1, 1),
             nn.Dropout(0.2)
         )
-        hidden7 = nn.Sequential(
-            nn.Conv2d(in_channels=192, out_channels=192, kernel_size=5, padding=2),
-            nn.BatchNorm2d(num_features=192),
+        self.conv7 = nn.Sequential(
+            nn.Conv2d(192, 192, 5, padding=2),
+            nn.BatchNorm2d(192),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2, padding=1),
+            nn.MaxPool2d(2, 2, 1),
             nn.Dropout(0.2)
         )
-        hidden8 = nn.Sequential(
-            nn.Conv2d(in_channels=192, out_channels=192, kernel_size=5, padding=2),
-            nn.BatchNorm2d(num_features=192),
+        self.conv8 = nn.Sequential(
+            nn.Conv2d(192, 192, 5, padding=2),
+            nn.BatchNorm2d(192),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=1, padding=1),
+            nn.MaxPool2d(2, 1, 1),
             nn.Dropout(0.2)
         )
-        hidden9 = nn.Sequential(
-            nn.Linear(192 * 7 * 7, 3072),
+        self.fc1 = nn.Sequential(
+            nn.Linear(9408, 3072),
             nn.ReLU()
         )
-        hidden10 = nn.Sequential(
+        self.fc2 = nn.Sequential(
             nn.Linear(3072, 3072),
             nn.ReLU()
         )
 
-        self._features = nn.Sequential(
-            hidden1,
-            hidden2,
-            hidden3,
-            hidden4,
-            hidden5,
-            hidden6,
-            hidden7,
-            hidden8
+        self.fc = nn.Sequential(
+            self.fc1,
+            self.fc2
         )
-        self._classifier = nn.Sequential(
-            hidden9,
-            hidden10
-        )
-        self._digit_length = nn.Sequential(nn.Linear(3072, conf.getint("num_classes")))
-        self._digit1 = nn.Sequential(nn.Linear(3072, 11))
-        self._digit2 = nn.Sequential(nn.Linear(3072, 11))
-        self._digit3 = nn.Sequential(nn.Linear(3072, 11))
-        self._digit4 = nn.Sequential(nn.Linear(3072, 11))
-        self._digit5 = nn.Sequential(nn.Linear(3072, 11))
+        self.classify = nn.Sequential(nn.Linear(3072, conf.getint("num_classes")))
 
     def forward(self, x):
-        x = self._features(x)
-        x = x.view(x.size(0), 192 * 7 * 7)
-        x = self._classifier(x)
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = self.conv3(x)
+        x = self.conv4(x)
+        x = self.conv5(x)
+        x = self.conv6(x)
+        x = self.conv7(x)
+        x = self.conv8(x)
 
-        length_logits, digits_logits = self._digit_length(x), [self._digit1(x),
-                                                               self._digit2(x),
-                                                               self._digit3(x),
-                                                               self._digit4(x),
-                                                               self._digit5(x)]
+        x = x.view(x.size(0), x.size(1) * x.size(2) * x.size(3))
+        x = self.fc(x)
 
-        return length_logits
+        length = self.classify(x)
+
+        return length

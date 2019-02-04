@@ -3,7 +3,7 @@ from tqdm import tqdm
 import torch
 import torch.optim as optim
 import numpy as np
-from models.large_cnn import LargeCNN
+from models.large_cnn import CNNpaper
 from models.medium_cnn import MediumCNN
 from models.small_cnn import SmallCNN
 from models.residual_network import ResNet
@@ -30,7 +30,8 @@ class Trainer:
         self.batch_size = self.model_conf.getint("batch_size")
         self.criterion = nn.CrossEntropyLoss()
         self.device = torch.device(self.model_conf.get('device'))
-        self.model = nn.DataParallel(eval(self.model_conf.get('name'))(self.model_conf).to(self.device))
+        self.model = eval(self.model_conf.get('name'))(self.model_conf).to(self.device)
+        # self.model = nn.DataParallel(eval(self.model_conf.get('name'))(self.model_conf).to(self.device))
         if self.model_conf.get("optim") == 'SGD':
             self.optimizer = optim.SGD(
                 self.model.parameters(), 
@@ -66,7 +67,7 @@ class Trainer:
             self.model.train()
             accuracy_train = 0
             loss_train = 0
-            for iteration, (x_batch, y_batch) in enumerate(trainloader):
+            for batch_index, (x_batch, y_batch) in enumerate(trainloader):
                 x_batch = x_batch.to(self.device)
                 y_batch = y_batch.to(self.device)
                 output = self.model(x_batch)
@@ -75,7 +76,7 @@ class Trainer:
                 loss.backward()
                 self.optimizer.step()
 
-                loss_train += loss
+                loss_train += loss.item()
 
                 pred = np.argmax(output.detach().cpu().numpy(), axis=1)
                 real = y_batch.detach().cpu().numpy()
@@ -83,19 +84,19 @@ class Trainer:
                 accuracy_train += correct
 
                 #if True:
-                if iteration % self.iteration_print_freq == 0:
+                if batch_index % self.iteration_print_freq == 0:
                     print("Iterration: {:.0f}/{} | Train Loss: {:.4f} ({:.4f}) | Train Accuracy: {:.2f} ({:.4f})"
-                          .format(iteration, len(trainloader.dataset), loss, loss_train / (iteration + 1),
+                          .format(batch_index, len(trainloader.dataset)//self.batch_size, loss, loss_train / (batch_index + 1),
                                   correct * 100 / self.batch_size,
-                                  accuracy_train * 100 / ((iteration + 1) * self.batch_size)))
+                                  accuracy_train * 100 / ((batch_index + 1) * self.batch_size)))
 
-            train_acc = accuracy_train * 100 / ((iteration + 1) * self.batch_size)
-            train_loss = loss_train / (iteration + 1)
+            train_acc = accuracy_train * 100 / ((batch_index + 1) * self.batch_size)
+            train_loss = loss_train / (batch_index + 1)
             # train_acc, train_loss = self.evaluate(trainloader)
 
             valid_acc, valid_loss = self.evaluate(devloader)
 
-            self.save_checkpoint(valid_acc)
+            # self.save_checkpoint(valid_acc)
 
             self._log_epoch(train_acc, train_loss, valid_acc, valid_loss)
 
