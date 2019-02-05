@@ -12,9 +12,7 @@ from trainer import Trainer
 
 
 def argparser():
-    """
-    Command line argument parser
-    """
+    """Command line argument parser"""
     parser = argparse.ArgumentParser(
         description='Split metadata into train/valid/test'
     )
@@ -45,6 +43,7 @@ def argparser():
     parser.add_argument('--device', type=str, default='cpu')
 
     return parser.parse_args()
+
 
 if __name__ == '__main__':
     args = argparser()
@@ -86,19 +85,19 @@ if __name__ == '__main__':
         crop_percent=conf.getfloat("preprocessing", "crop_percent"),
         transform=test_transforms)
 
-    trainloader = DataLoader(train_data,
-                             batch_size=conf.getint("model", "batch_size"),
-                             shuffle=True,
-                             num_workers=4,
-                             pin_memory=True)
-    devloader = DataLoader(valid_data,
-                           batch_size=100,
-                           num_workers=4,
-                           pin_memory=True)
-    testloader = DataLoader(test_data,
+    train_loader = DataLoader(train_data,
+                              batch_size=conf.getint("model", "batch_size"),
+                              shuffle=True,
+                              num_workers=4,
+                              pin_memory=True)
+    dev_loader = DataLoader(valid_data,
                             batch_size=100,
                             num_workers=4,
                             pin_memory=True)
+    test_loader = DataLoader(test_data,
+                             batch_size=100,
+                             num_workers=4,
+                             pin_memory=True)
 
     datetime_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     conf.set("paths", "results", os.path.join(conf.get("paths", "results"),
@@ -113,4 +112,4 @@ if __name__ == '__main__':
     os.makedirs(conf.get("paths", "checkpoints"), exist_ok=True)
 
     trainer = Trainer(conf)
-    trainer.train_model(trainloader, devloader)
+    trainer.train_model(train_loader, dev_loader)

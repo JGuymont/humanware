@@ -60,7 +60,7 @@ class Trainer:
         self.valid_size = None
         self.iteration_print_freq = conf.getint("log", "iteration_print_freq")
 
-    def train_model(self, trainloader, devloader):
+    def train_model(self, train_loader, dev_loader):
         """
         Find the optimal parameters according to self.criterion
         using SGD
@@ -71,7 +71,7 @@ class Trainer:
             self.model.train()
             accuracy_train = 0
             loss_train = 0
-            for batch_index, (x_batch, y_batch) in enumerate(trainloader):
+            for batch_index, (x_batch, y_batch) in enumerate(train_loader):
                 x_batch = x_batch.to(self.device)
                 y_batch = y_batch.to(self.device)
                 output = self.model(x_batch)
@@ -91,7 +91,7 @@ class Trainer:
                     print("Iteration: {:.0f}/{} "
                           "| Train Loss: {:.4f} ({:.4f}) "
                           "| Train Accuracy: {:.2f} ({:.4f})"
-                          .format(batch_index, len(trainloader), loss,
+                          .format(batch_index, len(train_loader), loss,
                                   loss_train / (batch_index + 1),
                                   correct * 100 / self.batch_size,
                                   accuracy_train * 100 / ((batch_index + 1)
@@ -101,7 +101,7 @@ class Trainer:
                                                 * self.batch_size)
             train_loss = loss_train / (batch_index + 1)
 
-            valid_acc, valid_loss = self.evaluate(devloader)
+            valid_acc, valid_loss = self.evaluate(dev_loader)
 
             self.save_checkpoint(valid_acc)
 
