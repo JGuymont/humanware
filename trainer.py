@@ -95,7 +95,7 @@ class Trainer:
 
             valid_acc, valid_loss = self.evaluate(devloader)
 
-            # self.save_checkpoint(valid_acc)
+            self.save_checkpoint(valid_acc)
 
             self._log_epoch(train_acc, train_loss, valid_acc, valid_loss)
 
