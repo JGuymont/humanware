@@ -9,7 +9,8 @@ from PIL import Image
 
 class SVHNDataset(Dataset):
 
-    def __init__(self, metadata_path, data_dir, crop_percent=None, transform=None):
+    def __init__(self, metadata_path, data_dir, crop_percent=None,
+                 transform=None):
         self._crop_percent = crop_percent
         self._metadata = self._load_pickle(metadata_path)
         self._data_dir = data_dir
@@ -52,4 +53,3 @@ class SVHNDataset(Dataset):
             (1 + self._crop_percent) * max_left, 
             (1 + self._crop_percent) * max_top))
         return image
-    

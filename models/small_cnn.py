@@ -1,7 +1,4 @@
-import torch 
 import torch.nn as nn
-import torchvision
-import torchvision.transforms as transforms
 
 class SmallCNN(nn.Module):
     def __init__(self, conf):

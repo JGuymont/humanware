@@ -1,13 +1,10 @@
 import glob
+import multiprocessing
+
 from PIL import Image
 import numpy as np
-import os
-import time
-from multiprocessing import Manager
-import multiprocessing
 import pickle as pkl
 
-import multiprocessing
 
 def append_img(args):
     print(args[0])
@@ -28,7 +25,8 @@ def append_img(args):
 if __name__ == '__main__':
     metadata = pkl.load(open("./data/SVHN/train_metadata.pkl", "rb"))
     imgs_paths = [path for path in glob.glob("./data/SVHN/train/*.png")]
-    indexes = [int(path[path.rfind("\\") + 1:path.rfind(".")]) for path in imgs_paths]
+    indexes = [int(path[path.rfind("\\") + 1:path.rfind(".")])
+               for path in imgs_paths]
     metas = [metadata[index - 1]["metadata"] for index in indexes]
     args = zip(indexes, imgs_paths, metas)
 

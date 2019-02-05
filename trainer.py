@@ -1,18 +1,18 @@
+import os
+import json
+import time
+
 import torch.nn as nn
-from tqdm import tqdm
 import torch
 import torch.optim as optim
 import numpy as np
+
 from models.large_cnn import CNNpaper
 from models.medium_cnn import MediumCNN
 from models.small_cnn import SmallCNN
 from models.residual_network import ResNet
 from models.senet import senet
-import pandas as pd
-import os
-import shutil
-import json
-import time
+
 
 class Trainer:
     """
@@ -30,11 +30,15 @@ class Trainer:
         self.batch_size = self.model_conf.getint("batch_size")
         self.criterion = nn.CrossEntropyLoss()
         self.device = torch.device(self.model_conf.get('device'))
-        self.model = eval(self.model_conf.get('name'))(self.model_conf).to(self.device)
-        # self.model = nn.DataParallel(eval(self.model_conf.get('name'))(self.model_conf).to(self.device))
+        self.model = (
+            eval(self.model_conf.get('name'))(self.model_conf).to(self.device)
+        )
+        # self.model = nn.DataParallel(
+        # eval(self.model_conf.get('name'))(self.model_conf).to(self.device)
+        # )
         if self.model_conf.get("optim") == 'SGD':
             self.optimizer = optim.SGD(
-                self.model.parameters(), 
+                self.model.parameters(),
                 lr=self.model_conf.getfloat("learning_rate"),
                 momentum=self.model_conf.getfloat("momentum"),
                 weight_decay=self.model_conf.getfloat("weight_decay"))
@@ -84,14 +88,18 @@ class Trainer:
                 accuracy_train += correct
 
                 if batch_index % self.iteration_print_freq == 0:
-                    print("Iteration: {:.0f}/{} | Train Loss: {:.4f} ({:.4f}) | Train Accuracy: {:.2f} ({:.4f})"
-                          .format(batch_index, len(trainloader), loss, loss_train / (batch_index + 1),
+                    print("Iteration: {:.0f}/{} "
+                          "| Train Loss: {:.4f} ({:.4f}) "
+                          "| Train Accuracy: {:.2f} ({:.4f})"
+                          .format(batch_index, len(trainloader), loss,
+                                  loss_train / (batch_index + 1),
                                   correct * 100 / self.batch_size,
-                                  accuracy_train * 100 / ((batch_index + 1) * self.batch_size)))
+                                  accuracy_train * 100 / ((batch_index + 1)
+                                                          * self.batch_size)))
 
-            train_acc = accuracy_train * 100 / ((batch_index + 1) * self.batch_size)
+            train_acc = accuracy_train * 100 / ((batch_index + 1)
+                                                * self.batch_size)
             train_loss = loss_train / (batch_index + 1)
-            # train_acc, train_loss = self.evaluate(trainloader)
 
             valid_acc, valid_loss = self.evaluate(devloader)
 
@@ -99,8 +107,15 @@ class Trainer:
 
             self._log_epoch(train_acc, train_loss, valid_acc, valid_loss)
 
-            print(' [*] Epoch: {:.0f} | Loss: {:.3f} | Train acc: {:.2f} | Dev acc: {:.2f} | time: {} sec.'.format(
-                self.epoch+1, train_loss, train_acc, valid_acc, round(time.time() - start_time)))
+            print(' [*] Epoch: {:.0f} '
+                  '| Loss: {:.3f} '
+                  '| Train acc: {:.2f} '
+                  '| Dev acc: {:.2f} '
+                  '| time: {} sec.'.format(self.epoch+1,
+                                           train_loss,
+                                           train_acc,
+                                           valid_acc,
+                                           round(time.time() - start_time)))
 
     def evaluate(self, dataloader):
         self.model.eval()
@@ -123,7 +138,9 @@ class Trainer:
         return round(accuracy, 4), np.mean(losses)
 
     def _log_epoch(self, train_acc, train_loss, valid_acc, valid_loss):
-        txt_file = open(os.path.join(self.results_path, "train_accuracies.txt"), "a")
+        txt_file = open(
+            os.path.join(self.results_path, "train_accuracies.txt"), "a"
+        )
         txt_file.write("epoch {} accuracy {} \n".format(self.epoch, train_acc))
         txt_file.close()
 
@@ -131,7 +148,9 @@ class Trainer:
         txt_file.write("epoch {} loss {} \n".format(self.epoch, train_loss))
         txt_file.close()
 
-        txt_file = open(os.path.join(self.results_path, "val_accuracies.txt"), "a")
+        txt_file = open(
+            os.path.join(self.results_path, "val_accuracies.txt"), "a"
+        )
         txt_file.write("epoch {} accuracy {} \n".format(self.epoch, valid_acc))
         txt_file.close()
 
@@ -148,20 +167,29 @@ class Trainer:
     def save_checkpoint(self, accuracy):
         state_dict = {
             'epoch': self.epoch + 1,
-            'state_dict': self.model.state_dict(),
-            'optim_dict' : self.optimizer.state_dict()
+            'model_dict': self.model.state_dict(),
+            'optim_dict': self.optimizer.state_dict()
         }
-        torch.save(state_dict, os.path.join(self.checkpoints_path, "last.pth".format(accuracy)))
+        torch.save(state_dict,
+                   os.path.join(self.checkpoints_path,
+                                "last.pth".format(accuracy)))
         if accuracy > self.best_accuracy:
             if self.best_accuracy > 0:
-                os.remove(os.path.join(self.checkpoints_path, "best_{acc:.4f}.pth".format(acc=self.best_accuracy)))
+                os.remove(
+                    os.path.join(
+                        self.checkpoints_path,
+                        "best_{acc:.4f}.pth".format(acc=self.best_accuracy)
+                    )
+                )
             self.best_accuracy = accuracy
-            torch.save(state_dict, os.path.join(self.checkpoints_path, "best_{acc:.4f}.pth".format(acc=accuracy)))
+            torch.save(state_dict,
+                       os.path.join(self.checkpoints_path,
+                                    "best_{acc:.4f}.pth".format(acc=accuracy)))
             self.best_accuracy = accuracy
 
     def load_checkpoint(self, checkpoint_path, continue_from_epoch=True):
         state = torch.load(checkpoint_path)
-        self.model.load_state_dict(state['state_dict'])
+        self.model.load_state_dict(state['model_dict'])
         self.optimizer.load_state_dict(state['optim_dict'])
 
         if continue_from_epoch:

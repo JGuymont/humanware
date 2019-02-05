@@ -1,6 +1,6 @@
-import numpy as np
 from torchvision import transforms
 from PIL import Image
+
 
 class SVHNImage:
     def __init__(self, metadata, image_path, crop_percent=None, transform=None):
@@ -17,7 +17,8 @@ class SVHNImage:
         Crop an Pil image arround the bounding box that contains all
         the digits
         """
-        image = image.crop((self._min_left, self._min_top, self._max_left, self._max_top))
+        image = image.crop((self._min_left, self._min_top, self._max_left,
+                            self._max_top))
         return image
 
     def _crop_expand(self, image):
@@ -42,7 +43,8 @@ class SVHNImage:
         return transform(image)
     
     def cropped_image(self):
-        transform = transforms.Compose([transforms.Resize((64, 64)), transforms.ToTensor()])
+        transform = transforms.Compose([transforms.Resize((64, 64)),
+                                        transforms.ToTensor()])
         image = self._crop_expand(self._image)
         return transform(image)
     

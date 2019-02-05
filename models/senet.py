@@ -382,17 +382,22 @@ def initialize_pretrained_model(model, num_classes, settings, pth_path=None):
     model.mean = settings['mean']
     model.std = settings['std']
 
+
 def senet(conf):
     senet = None
     if conf.getboolean("pretrained"):
-        senet = senet154(pretrained="imagenet", pth_path=conf.get("pretrained_checkpoint_path"))
-        #for param in senet.parameters():
-        #    param.requires_grad = False
-        senet.last_linear = nn.Sequential(senet.last_linear, nn.Linear(senet.last_linear.out_features, conf.getint("num_classes")))
+        senet = senet154(pretrained="imagenet",
+                         pth_path=conf.get("pretrained_checkpoint_path"))
+        new_last_linear = nn.Linear(senet.last_linear.out_features,
+                                    conf.getint("num_classes"))
+        senet.last_linear = nn.Sequential(senet.last_linear, new_last_linear)
     else:
-        senet = senet154(conf.getint("num_classes"), pretrained=None, pth_path=conf.get("pretrained_chk_path"))
+        senet = senet154(conf.getint("num_classes"),
+                         pretrained=None,
+                         pth_path=conf.get("pretrained_chk_path"))
 
     return senet
+
 
 def senet154(num_classes=1000, pretrained='imagenet', pth_path=None):
     model = SENet(SEBottleneck, [3, 8, 36, 3], groups=64, reduction=16,

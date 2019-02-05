@@ -14,9 +14,11 @@ class Maxout(nn.Module):
         self._pool_size = pool_size
 
     def forward(self, x):
-        assert x.shape[-1] % self._pool_size == 0, \
-            'Wrong input last dim size ({}) for Maxout({})'.format(x.shape[-1], self._pool_size)
-        m, i = x.view(*x.shape[:-1], x.shape[-1] // self._pool_size, self._pool_size).max(2)
+        assert (x.shape[-1] % self._pool_size == 0,
+            'Wrong input last dim size ({}) for Maxout({})'
+                .format(x.shape[-1], self._pool_size))
+        m, i = x.view(*x.shape[:-1], x.shape[-1] // self._pool_size,
+                      self._pool_size).max(2)
         return m
 
 class CNNpaper(nn.Module):
@@ -94,7 +96,8 @@ class CNNpaper(nn.Module):
             self.fc1,
             self.fc2
         )
-        self.classify = nn.Sequential(nn.Linear(3072, conf.getint("num_classes")))
+        self.classify = nn.Sequential(nn.Linear(3072,
+                                                conf.getint("num_classes")))
 
     def forward(self, x):
         x = self.conv1(x)

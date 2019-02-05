@@ -1,16 +1,19 @@
 import torch.nn as nn
-import torchvision
-import torch
 import torch.nn.functional as F
+
 
 class MediumCNN(nn.Module):
     def __init__(self):
         super(MediumCNN, self).__init__()
 
-        self.conv1 = nn.Conv2d(3, 48, kernel_size=5, stride=2, padding=3, bias=False)
-        self.conv2 = nn.Conv2d(48, 64, kernel_size=5, stride=1, padding=3, bias=False)
-        self.conv3 = nn.Conv2d(64, 128, kernel_size=5, stride=2, padding=3, bias=False)
-        self.conv4 = nn.Conv2d(128, 192, kernel_size=5, stride=1, padding=3, bias=False)
+        self.conv1 = nn.Conv2d(3, 48, kernel_size=5, stride=2,
+                               padding=3, bias=False)
+        self.conv2 = nn.Conv2d(48, 64, kernel_size=5, stride=1,
+                               padding=3, bias=False)
+        self.conv3 = nn.Conv2d(64, 128, kernel_size=5, stride=2,
+                               padding=3, bias=False)
+        self.conv4 = nn.Conv2d(128, 192, kernel_size=5, stride=1,
+                               padding=3, bias=False)
 
         self.fc1 = nn.Linear(4*192, 2)
         self.fc2 = nn.Linear(3072, 768)
