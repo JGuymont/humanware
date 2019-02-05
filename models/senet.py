@@ -384,19 +384,21 @@ def initialize_pretrained_model(model, num_classes, settings, pth_path=None):
 
 
 def senet(conf):
-    senet = None
     if conf.getboolean("pretrained"):
-        senet = senet154(pretrained="imagenet",
-                         pth_path=conf.get("pretrained_checkpoint_path"))
-        new_last_linear = nn.Linear(senet.last_linear.out_features,
-                                    conf.getint("num_classes"))
-        senet.last_linear = nn.Sequential(senet.last_linear, new_last_linear)
-    else:
-        senet = senet154(conf.getint("num_classes"),
-                         pretrained=None,
-                         pth_path=conf.get("pretrained_chk_path"))
+        model = SENet(SEBottleneck, [3, 8, 36, 3], groups=64, reduction=16,
+                      dropout_p=0.2, num_classes=1000)
+        if conf.get("checkpoint") is None:
+            settings = pretrained_settings['senet154']['imagenet']
+            initialize_pretrained_model(model, 1000, settings, conf.get("pretrained_checkpoint_path"))
 
-    return senet
+        new_last_linear = nn.Linear(model.last_linear.out_features,
+                                    conf.getint("num_classes"))
+        model.last_linear = nn.Sequential(model.last_linear, new_last_linear)
+    else:
+        model = SENet(SEBottleneck, [3, 8, 36, 3], groups=64, reduction=16,
+                      dropout_p=0.2, num_classes=conf.getint("num_classes"))
+
+    return model
 
 
 def senet154(num_classes=1000, pretrained='imagenet', pth_path=None):
