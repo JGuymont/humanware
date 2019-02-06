@@ -17,7 +17,6 @@ def eval_model(dataset_dir, metadata_filename, model_filename):
     '''
     Skeleton for your testing function. Modify/add
     all arguments you will need.
-
     '''
 
     conf = ConfigParser()
