@@ -2,8 +2,8 @@
 
 
 # PROJECT_PATH will be changed to the master branch of your repo
-PROJECT_PATH='/rap/jvb-000-aa/COURS2019/etudiants/ift6759/projects/humanware/'
-
+# PROJECT_PATH='/rap/jvb-000-aa/COURS2019/etudiants/ift6759/projects/humanware/'
+PROJECT_PATH='/rap/jvb-000-aa/COURS2019/etudiants/submissions/b1phut1/code/'
 RESULTS_DIR='/rap/jvb-000-aa/COURS2019/etudiants/ift6759/projects/humanware/evaluation'
 DATA_DIR='/rap/jvb-000-aa/COURS2019/etudiants/ift6759/projects/humanware/data/SVHN/test_sample'
 METADATA_FILENAME='/rap/jvb-000-aa/COURS2019/etudiants/ift6759/projects/humanware/data/SVHN/test_sample_metadata.pkl'
