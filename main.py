@@ -48,7 +48,7 @@ def argparser():
 if __name__ == '__main__':
     args = argparser()
     conf = ConfigParser()
-    conf.read(args.config)
+    conf.read('senet.ini')
     conf.set('model', 'device', 'cuda' if torch.cuda.is_available() else 'cpu')
 
     train_transforms = transforms.Compose([
