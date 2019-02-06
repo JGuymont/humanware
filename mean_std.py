@@ -1,3 +1,6 @@
+"""
+Module to compute the mean and std of the whole training dataset once cropped
+"""
 import glob
 import multiprocessing
 
@@ -7,6 +10,11 @@ import pickle as pkl
 
 
 def append_img(args):
+    """
+    Function to crop, resize and convert an image to a numpy array
+    :param args: object containing the settings of the preprocess
+    :return: the image transformed
+    """
     print(args[0])
     meta = args[2]
     min_left = min(meta['left'])
@@ -21,6 +29,7 @@ def append_img(args):
         (1 + 0.3) * max_top))
     image = image.resize((64,64))
     return np.array(image)
+
 
 if __name__ == '__main__':
     metadata = pkl.load(open("./data/SVHN/train_metadata.pkl", "rb"))

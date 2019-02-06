@@ -2,12 +2,10 @@
 Implementation of the CNN describe in Goodfellow et al, 2013
 """
 import torch.nn as nn
-import torchvision
-import torch
-import torch.nn.functional as F
 
 # from https://github.com/pytorch/pytorch/issues/805
-# not used - but left here for reference on how to make Maxout units like in Goodfellow et al, 2013
+# not used - but left here for reference on how to
+# make Maxout units like in Goodfellow et al, 2013
 class Maxout(nn.Module):
     def __init__(self, pool_size):
         super().__init__()
@@ -22,8 +20,15 @@ class Maxout(nn.Module):
         return m
 
 class CNNpaper(nn.Module):
-
+    """
+    Class representing the model from Goodfellow et al, 2013
+    """
     def __init__(self, conf):
+        """
+        Instantiate the model's layers.
+
+        :param conf: model configuration
+        """
         super(CNNpaper, self).__init__()
 
         self.conv1 = nn.Sequential(
@@ -100,6 +105,12 @@ class CNNpaper(nn.Module):
                                                 conf.getint("num_classes")))
 
     def forward(self, x):
+        """
+        Function to apply the forward pass of the residual block.
+
+        :param x: the input
+        :return: the output
+        """
         x = self.conv1(x)
         x = self.conv2(x)
         x = self.conv3(x)

@@ -1,3 +1,6 @@
+"""
+Module containing the different SENet implementations
+"""
 from __future__ import print_function, division, absolute_import
 from collections import OrderedDict
 import math
@@ -88,7 +91,9 @@ pretrained_settings = {
 
 
 class SEModule(nn.Module):
-
+    """
+    Class representing the Squeeze and Excitation part of the net.
+    """
     def __init__(self, channels, reduction):
         super(SEModule, self).__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
@@ -372,6 +377,15 @@ class SENet(nn.Module):
 
 
 def initialize_pretrained_model(model, num_classes, settings, pth_path=None):
+    """
+    Function to initialize a pretrained model.
+
+    :param model: the model to initialize
+    :param num_classes: the number of classes that it has to predict
+    :param settings: input_size, input_space, input_range, mean and std
+    of the pretrained model
+    :param pth_path: path to the checkpoint containing the parameters
+    """
     assert num_classes == settings['num_classes'], \
         'num_classes should be {}, but is {}'.format(
             settings['num_classes'], num_classes)
@@ -384,6 +398,14 @@ def initialize_pretrained_model(model, num_classes, settings, pth_path=None):
 
 
 def senet(conf):
+    """
+    Function to create a SENet-154 from a configuration.
+    It can creates a model pretrained on ImageNet and add a layer for
+    the number of outputs to enable fine-tuning on a new task.
+
+    :param conf: configuration the SENet-154.
+    :return: the model.
+    """
     senet = None
     if conf.getboolean("pretrained"):
         senet = senet154(pretrained="imagenet",
@@ -400,6 +422,14 @@ def senet(conf):
 
 
 def senet154(num_classes=1000, pretrained='imagenet', pth_path=None):
+    """
+    Function to create a SENet-154 pretrained or not.
+
+    :param num_classes: the number of outputs.
+    :param pretrained: which pretrained version or not pretrained.
+    :param pth_path: path to the pretrained checkpoint.
+    :return: the model
+    """
     model = SENet(SEBottleneck, [3, 8, 36, 3], groups=64, reduction=16,
                   dropout_p=0.2, num_classes=num_classes)
     if pretrained is not None:

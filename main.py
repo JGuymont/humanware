@@ -1,3 +1,6 @@
+"""
+Starting point for training the models
+"""
 import os
 import argparse
 from datetime import datetime
@@ -12,6 +15,11 @@ from trainer import Trainer
 
 
 def argparser():
+    """
+    Configure the command-line arguments parser
+
+    :return: the arguments parsed
+    """
     """Command line argument parser"""
     parser = argparse.ArgumentParser(
         description='Split metadata into train/valid/test'
@@ -33,7 +41,8 @@ def argparser():
 
     parser.add_argument('--model',
                         type=str,
-                        choices=['SmallCNN', 'MediumCNN', 'LargeCNN', 'ResNet'])
+                        choices=['SmallCNN', 'MediumCNN', 'LargeCNN',
+                                 'ResNet'])
     parser.add_argument('--num_classes', type=int, default=5)
     parser.add_argument('--n_epochs', type=int, default=100)
     parser.add_argument('--batch_size', type=int, default=128)
@@ -54,6 +63,7 @@ if __name__ == '__main__':
     train_transforms = transforms.Compose([
         transforms.Resize((64, 64)),
         transforms.RandomCrop(54),
+        # Resize to input size for pretrained SENet
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
         transforms.Normalize([0.39954964, 0.3988817, 0.41280591],
@@ -61,6 +71,7 @@ if __name__ == '__main__':
     ])
 
     test_transforms = transforms.Compose([
+        # Resize to input size for pretrained SENet
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
         transforms.Normalize([0.39954964, 0.3988817, 0.41280591],

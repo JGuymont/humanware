@@ -3,6 +3,9 @@ from PIL import Image
 
 
 class SVHNImage:
+    """
+    A utility classd for an image from the SVHN dataset
+    """
     def __init__(self, metadata, image_path, crop_percent=None, transform=None):
         self._crop_percent = crop_percent
         self._transform = transform
@@ -14,8 +17,11 @@ class SVHNImage:
     
     def _crop(self, image):
         """
-        Crop an Pil image arround the bounding box that contains all
+        Crop an Pil image around the bounding box that contains all
         the digits
+
+        :param image: the image to crop
+        :return: the image cropped
         """
         image = image.crop((self._min_left, self._min_top, self._max_left,
                             self._max_top))
@@ -25,6 +31,8 @@ class SVHNImage:
         """
         Crop an Pil image arround the bounding box that contains all
         the digits and expand the box by 30%
+
+        :param image: the image to crop
         """
         image = image.crop((
             (1 - self._crop_percent) * self._min_left, 

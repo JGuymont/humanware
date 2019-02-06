@@ -1,7 +1,6 @@
 """
 Split metadata into train/valid/test
 """
-
 import argparse
 import os
 
@@ -10,7 +9,9 @@ import pickle
 
 def argparser():
     """
-    Command line argument parser
+    Configure the command-line arguments parser
+
+    :return: the arguments parsed
     """
     parser = argparse.ArgumentParser(
         description='Split metadata into train/valid/test'
@@ -28,11 +29,22 @@ def argparser():
 
 
 def save_metadata(metadata, path):
+    """
+    Create a pickle file for the metadata
+
+    :param metadata: the metadata file to save
+    :param path: where to save the file
+    """
     with open(path, 'wb') as f:
         pickle.dump(metadata, f, pickle.HIGHEST_PROTOCOL)
 
 
 def main(args):
+    """
+    Split a metadata file in train/valid/test metadata files
+
+    :param args: Command-line args to parse
+    """
     with open(args.metadata_path, 'rb') as f:
         metadata = pickle.load(f)
     assert round((args.train_pct

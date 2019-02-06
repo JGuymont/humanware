@@ -1,5 +1,5 @@
 """
-Deep Residual Networw implementation in Pytorch
+Deep Residual Network implementation in Pytorch
 """
 import json
 
@@ -9,6 +9,11 @@ from torch import nn
 def conv3x3(in_channels, out_channels, stride=1):
     """
     3x3 convolution
+
+    :param in_channels: the number of input channels
+    :param out_channels: the number of output channels
+    :param stride: the size of the stride
+    :return: the output of the convolution
     """
     return nn.Conv2d(in_channels, out_channels, kernel_size=3,
                      stride=stride, padding=1, bias=False)
@@ -16,9 +21,17 @@ def conv3x3(in_channels, out_channels, stride=1):
 
 class ResidualBlock(nn.Module):
     """
-    Residual block
+    Class representing a residual block
     """
     def __init__(self, in_channels, out_channels, stride=1, downsample=None):
+        """
+        Instantiate a residual block.
+
+        :param in_channels: the number of input channels
+        :param out_channels: the number of output channels
+        :param stride: the size of the stride
+        :param downsample: object that will downsample the input
+        """
         super(ResidualBlock, self).__init__()
         self.conv1 = conv3x3(in_channels, out_channels, stride)
         self.bn1 = nn.BatchNorm2d(out_channels)
@@ -28,6 +41,12 @@ class ResidualBlock(nn.Module):
         self.downsample = downsample
 
     def forward(self, x):
+        """
+        Function to apply the forward pass of the residual block.
+
+        :param x: the input
+        :return: the output
+        """
         residual = x
         out = self.conv1(x)
         out = self.bn1(out)
@@ -43,11 +62,14 @@ class ResidualBlock(nn.Module):
 class ResNet(nn.Module):
     """
     Residual Network
-
-    Args:
-        layers (list of int): Number of blocks at each layers
     """
     def __init__(self, config, block=ResidualBlock):
+        """
+        Instantiate a ResNet
+
+        :param config: configuration the ResNet (size of the output layer)
+        :param block: the type of residual block
+        """
         super(ResNet, self).__init__()
         layers = json.loads(config.get("layers"))
         self.in_channels = 16
@@ -61,19 +83,35 @@ class ResNet(nn.Module):
         self.fc = nn.Linear(64, config.getint("num_classes"))
 
     def make_layer(self, block, out_channels, blocks, stride=1):
+        """
+        Function to create one layer of the ResNet.
+
+        :param block: the type of residual block
+        :param out_channels: the number of out channels
+        :param blocks: the number of blocks in the layer
+        :param stride: the size of the stride
+        :return: a sequential containing all the sub-layers
+        """
         downsample = None
         if (stride != 1) or (self.in_channels != out_channels):
             downsample = nn.Sequential(
                 conv3x3(self.in_channels, out_channels, stride=stride),
                 nn.BatchNorm2d(out_channels))
         layers = []
-        layers.append(block(self.in_channels, out_channels, stride, downsample))
+        layers.append(block(self.in_channels, out_channels, stride,
+                            downsample))
         self.in_channels = out_channels
         for i in range(1, blocks):
             layers.append(block(out_channels, out_channels))
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        """
+        Function to apply the forward pass of the ResNet
+
+        :param x: the input
+        :return: the output
+        """
         out = self.conv(x)
         out = self.bn(out)
         out = self.relu(out)
