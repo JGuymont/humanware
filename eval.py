@@ -21,22 +21,29 @@ def eval_model(dataset_dir, metadata_filename, model_filename):
     '''
 
     conf = ConfigParser()
-    conf.read(args.config)
+    conf.read('senet.ini')
+    conf.set('model', 'checkpoint', model_filename)
     conf.set('model', 'device', 'cuda' if torch.cuda.is_available() else 'cpu')
 
+    test_transforms = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize([0.39954964, 0.3988817, 0.41280591],
+                             [0.23269807, 0.2355513, 0.23580605])
+    ])
+
     test_data = SVHNDataset(
-        metadata_path=conf.get("paths", "test_metadata"),
-        data_dir=conf.get("paths", "data_dir"),
+        metadata_path=metadata_filename,
+        data_dir=dataset_dir,
         crop_percent=conf.getfloat("preprocessing", "crop_percent"),
         transform=test_transforms)
 
     test_loader = DataLoader(test_data,
                              batch_size=32,
-                             num_workers=1,
-                             pin_memory=False)
+                             num_workers=0,
+                             pin_memory=True)
 
     t = Trainer(conf)
-    t.load_checkpoint(model_filename, continue_from_epoch=False)
     y_pred = t.evaluate(test_loader)
 
     return y_pred
