@@ -44,7 +44,7 @@ def eval_model(dataset_dir, metadata_filename, model_filename):
                              pin_memory=True)
 
     t = Trainer(conf)
-    y_pred = t.evaluate(test_loader)
+    y_pred = t.make_predictions(test_loader)
 
     return y_pred
 

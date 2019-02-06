@@ -158,14 +158,12 @@ class Trainer:
         txt_file.write("epoch {} loss {} \n".format(self.epoch, valid_loss))
         txt_file.close()
 
-    def make_predictions(self, x, y):
+    def make_predictions(self, dataloader):
         final_predictions = []
         self.model.eval()
-        losses = []
         with torch.no_grad():
             for (inputs, targets) in dataloader:
                 inputs = inputs.to(self.device)
-                targets = targets.to(self.device)
 
                 outputs = self.model(inputs)
                 _, predicted = torch.max(outputs.data, 1)
