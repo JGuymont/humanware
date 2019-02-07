@@ -1,9 +1,11 @@
 #!/bin/bash
 #PBS -A colosse-users
+#PBS -l feature=k80
 #PBS -l nodes=1:gpus=1
 #PBS -l walltime=01:00:00  
 
 # set the working directory to where the job is launched
 cd "${PBS_O_WORKDIR}"
 
-s_exec python main.py ./config/resnet01.ini
+#s_exec python main.py ./config/resnet01.ini
+evaluation/run_evaluation.sh
