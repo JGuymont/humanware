@@ -411,8 +411,12 @@ def senet(conf):
         model = SENet(SEBottleneck, [3, 8, 36, 3], groups=64, reduction=16,
                       dropout_p=0.2, num_classes=1000)
         if conf.get("checkpoint") is None:
+            print("No checkpoint, loading ImageNet pretrained weights")
             settings = pretrained_settings['senet154']['imagenet']
-            initialize_pretrained_model(model, 1000, settings, conf.get("pretrained_checkpoint_path"))
+            initialize_pretrained_model(model,
+                                        1000,
+                                        settings,
+                                        conf.get("pretrained_checkpoint_path"))
 
         new_last_linear = nn.Linear(model.last_linear.out_features,
                                     conf.getint("num_classes"))

@@ -39,6 +39,9 @@ class Trainer:
         self.model = nn.DataParallel(
             eval(self.model_conf.get('name'))(self.model_conf).to(self.device)
         )
+        total_params = sum(p.numel() for p in self.model.parameters())
+        print("Created model {}: {} parameters"
+              .format(self.model_conf.get('name'), total_params))
         if self.model_conf.get("optim") == 'SGD':
             self.optimizer = optim.SGD(
                 self.model.parameters(),
@@ -237,7 +240,7 @@ class Trainer:
         :param continue_from_epoch: indicates if the training should continue
         from the checkpoint's last epoch or start at 0.
         """
-        print("loading model")
+        print("Loading checkpoint: {}".format(checkpoint_path))
         state = torch.load(checkpoint_path)
         self.model.load_state_dict(state['state_dict'])
         self.optimizer.load_state_dict(state['optim_dict'])
