@@ -20,7 +20,7 @@ def eval_model(dataset_dir, metadata_filename, model_filename):
     Skeleton for your testing function. Modify/add
     all arguments you will need.
     '''
-
+    print("starting eval")
     conf = ConfigParser()
     conf.read('/rap/jvb-000-aa/COURS2019/etudiants/submissions/b1phut1/code/config/senet.ini')
     conf.set('model', 'checkpoint', model_filename)
@@ -43,15 +43,16 @@ def eval_model(dataset_dir, metadata_filename, model_filename):
                              batch_size=32,
                              num_workers=0,
                              pin_memory=True)
-
+    print("making eval predictions")
     t = Trainer(conf)
     y_pred = t.make_predictions(test_loader)
-
+    print(y_pred)
+    print("done")
     return y_pred
 
 
 if __name__ == "__main__":
-
+    print("entering main")
     ###### DO NOT MODIFY THIS SECTION ######
     parser = argparse.ArgumentParser()
 
@@ -72,7 +73,7 @@ if __name__ == "__main__":
     dataset_dir = args.dataset_dir
     results_dir = args.results_dir
     #########################################
-
+    print("out section 1")
 
     ###### MODIFY THIS SECTION ######
     # Put your group name here
@@ -82,7 +83,7 @@ if __name__ == "__main__":
     # model_filename should be the absolute path on shared disk to your
     # best model. You need to ensure that they are available to evaluators on
     # Helios.
-
+    print(group_name, model_filename)
     #################################
 
 
