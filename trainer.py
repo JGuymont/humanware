@@ -237,7 +237,7 @@ class Trainer:
         :param continue_from_epoch: indicates if the training should continue
         from the checkpoint's last epoch or start at 0.
         """
-        state = torch.load(checkpoint_path)
+        state = torch.load(checkpoint_path, map_location='cpu')
         self.model.load_state_dict(state['model_dict'])
         self.optimizer.load_state_dict(state['optim_dict'])
 
