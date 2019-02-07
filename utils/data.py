@@ -1,6 +1,8 @@
 """
 Module that contains the dataset class for PyTorch
 """
+import os
+
 import pickle as pkl
 import numpy as np
 from torch.utils.data import Dataset
@@ -38,7 +40,7 @@ class SVHNDataset(Dataset):
         :return: a tuple of the image and the number of digits in it.
         """
         index = self._img_keys[index]
-        img_name = '{}/{}.png'.format(self._data_dir, index+1)
+        img_name = os.path.join(self._data_dir, '{}.png'.format(index+1))
         meta = self._metadata[index]['metadata']
         labels = meta['label']
         left = min(meta['left'])
