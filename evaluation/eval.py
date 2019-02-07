@@ -2,12 +2,13 @@ import argparse
 from pathlib import Path
 import sys
 
+sys.path.append('..')
+
 import numpy as np
 import torch
 from torchvision import transforms
 from torch.utils.data import DataLoader
 
-sys.path.append('..')
 
 from trainer import Trainer
 from configparser import ConfigParser
