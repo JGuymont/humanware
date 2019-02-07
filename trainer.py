@@ -127,6 +127,54 @@ class Trainer:
                                            valid_acc,
                                            round(time.time() - start_time)))
 
+    def full_train_model(self, train_loader):
+        start_time = time.time()
+        for self.epoch in range(self.epoch, self.epochs):
+            self.model.train()
+            accuracy_train = 0
+            loss_train = 0
+            for batch_index, (x_batch, y_batch) in enumerate(train_loader):
+                x_batch = x_batch.to(self.device)
+                y_batch = y_batch.to(self.device)
+                output = self.model(x_batch)
+                loss = self.criterion(output, y_batch)
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+
+                loss_train += loss.item()
+
+                pred = np.argmax(output.detach().cpu().numpy(), axis=1)
+                real = y_batch.detach().cpu().numpy()
+                correct = np.sum(pred == real)
+                accuracy_train += correct
+
+                if batch_index % self.iteration_print_freq == 0:
+                    print("Iteration: {:.0f}/{} "
+                          "| Train Loss: {:.4f} ({:.4f}) "
+                          "| Train Accuracy: {:.2f} ({:.4f})"
+                          .format(batch_index, len(train_loader), loss,
+                                  loss_train / (batch_index + 1),
+                                  correct * 100 / self.batch_size,
+                                  accuracy_train * 100 / ((batch_index + 1)
+                                                          * self.batch_size)))
+
+            train_acc = accuracy_train * 100 / ((batch_index + 1)
+                                                * self.batch_size)
+            train_loss = loss_train / (batch_index + 1)
+
+            self.save_checkpoint()
+
+            self._log_epoch(train_acc, train_loss)
+
+            print(' [*] Epoch: {:.0f} '
+                  '| Loss: {:.3f} '
+                  '| Train acc: {:.2f} '
+                  '| time: {} sec.'.format(self.epoch + 1,
+                                           train_loss,
+                                           train_acc,
+                                           round(time.time() - start_time)))
+
     def evaluate(self, dataloader):
         """
         Function to evaluate the accuracy and loss of the model on the data
@@ -155,7 +203,8 @@ class Trainer:
         accuracy = 100. * correct / total
         return round(accuracy, 4), np.mean(losses)
 
-    def _log_epoch(self, train_acc, train_loss, valid_acc, valid_loss):
+    def _log_epoch(self, train_acc, train_loss, valid_acc=None,
+                   valid_loss=None):
         """
         Function to log the accuracy and the loss
         on the training and validation dataset.
@@ -175,18 +224,25 @@ class Trainer:
         txt_file.write("epoch {} loss {} \n".format(self.epoch, train_loss))
         txt_file.close()
 
-        txt_file = open(
-            os.path.join(self.results_path, "val_accuracies.txt"), "a"
-        )
-        txt_file.write("epoch {} accuracy {} \n".format(self.epoch, valid_acc))
-        txt_file.close()
+        if valid_acc:
+            txt_file = open(
+                os.path.join(self.results_path, "val_accuracies.txt"), "a"
+            )
+            txt_file.write("epoch {} accuracy {} \n".format(self.epoch,
+                                                            valid_acc))
+            txt_file.close()
 
-        txt_file = open(os.path.join(self.results_path, "loss_val.txt"), "a")
-        txt_file.write("epoch {} loss {} \n".format(self.epoch, valid_loss))
-        txt_file.close()
+        if valid_loss:
+            txt_file = open(
+                os.path.join(self.results_path, "loss_val.txt"), "a"
+            )
+            txt_file.write("epoch {} loss {} \n".format(self.epoch,
+                                                        valid_loss))
+            txt_file.close()
 
     def make_predictions(self, dataloader):
         final_predictions = []
+        final_targets = []
         self.model.eval()
         with torch.no_grad():
             for (inputs, targets) in dataloader:
@@ -196,10 +252,11 @@ class Trainer:
                 _, predicted = torch.max(outputs.data, 1)
 
                 final_predictions.extend([i.item() for i in predicted.data])
+                final_targets.extend([i.item() for i in targets.data])
 
-        return np.array(final_predictions)
+        return np.array(final_predictions), np.array(final_targets)
 
-    def save_checkpoint(self, accuracy):
+    def save_checkpoint(self, accuracy = None):
         """
         Function to create checkpoint of the model. It always creates a
         checkpoint named last.pth for the current model.
@@ -218,7 +275,7 @@ class Trainer:
         torch.save(state_dict,
                    os.path.join(self.checkpoints_path,
                                 "last.pth".format(accuracy)))
-        if accuracy > self.best_accuracy:
+        if accuracy is not None and accuracy > self.best_accuracy:
             if self.best_accuracy > 0:
                 os.remove(
                     os.path.join(
