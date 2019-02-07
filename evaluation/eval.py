@@ -7,12 +7,11 @@ import torch
 from torchvision import transforms
 from torch.utils.data import DataLoader
 
+sys.path.append('..')
+
 from trainer import Trainer
 from configparser import ConfigParser
 from utils.data import SVHNDataset
-
-sys.path.append('..')
-
 
 def eval_model(dataset_dir, metadata_filename, model_filename):
 
