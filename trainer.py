@@ -238,7 +238,7 @@ class Trainer:
         from the checkpoint's last epoch or start at 0.
         """
         state = torch.load(checkpoint_path, map_location='cpu')
-        self.model.load_state_dict(state['model_dict'])
+        self.model.load_state_dict(state['state_dict'])
         self.optimizer.load_state_dict(state['optim_dict'])
 
         if continue_from_epoch:
