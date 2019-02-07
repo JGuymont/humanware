@@ -33,12 +33,12 @@ class Trainer:
         self.batch_size = self.model_conf.getint("batch_size")
         self.criterion = nn.CrossEntropyLoss()
         self.device = torch.device(self.model_conf.get('device'))
-        self.model = (
+        #self.model = (
+        #    eval(self.model_conf.get('name'))(self.model_conf).to(self.device)
+        #)
+        self.model = nn.DataParallel(
             eval(self.model_conf.get('name'))(self.model_conf).to(self.device)
         )
-        # self.model = nn.DataParallel(
-        # eval(self.model_conf.get('name'))(self.model_conf).to(self.device)
-        # )
         if self.model_conf.get("optim") == 'SGD':
             self.optimizer = optim.SGD(
                 self.model.parameters(),
