@@ -25,7 +25,7 @@ class Trainer:
         """
         Instantiate all the attributes of the class,
         create an instance of the model and load a checkpoint if necessary.
-        :param conf: configuration that will be used the model.
+        :param conf: configuration that will be used for the model.
         """
         self.model_conf = conf["model"]
         self.epochs = self.model_conf.getint("n_epochs")
@@ -209,7 +209,7 @@ class Trainer:
         """
         state_dict = {
             'epoch': self.epoch + 1,
-            'model_dict': self.model.state_dict(),
+            'state_dict': self.model.state_dict(),
             'optim_dict': self.optimizer.state_dict()
         }
         torch.save(state_dict,
