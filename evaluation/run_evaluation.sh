@@ -15,4 +15,4 @@ DATA_DIR='/home/user54/digit-detection/data/SVHN/train/'
 METADATA_FILENAME='/home/user54/digit-detection/data/SVHN/train_metadata.pkl'
 
 cd $PROJECT_PATH/evaluation
-s_exec python evaluation/eval.py --dataset_dir=$DATA_DIR --results_dir=$RESULTS_DIR --metadata_filename=$METADATA_FILENAME
+s_exec python eval.py --dataset_dir=$DATA_DIR --results_dir=$RESULTS_DIR --metadata_filename=$METADATA_FILENAME

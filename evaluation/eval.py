@@ -52,7 +52,7 @@ def eval_model(dataset_dir, metadata_filename, model_filename):
 
 
 if __name__ == "__main__":
-
+    print("entering main")
     ###### DO NOT MODIFY THIS SECTION ######
     parser = argparse.ArgumentParser()
 
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     dataset_dir = args.dataset_dir
     results_dir = args.results_dir
     #########################################
-
+    print("out section 1")
 
     ###### MODIFY THIS SECTION ######
     # Put your group name here
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     # model_filename should be the absolute path on shared disk to your
     # best model. You need to ensure that they are available to evaluators on
     # Helios.
-
+    print(group_name, model_filename)
     #################################
 
 
