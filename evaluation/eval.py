@@ -46,7 +46,6 @@ def eval_model(dataset_dir, metadata_filename, model_filename):
     print("making eval predictions")
     t = Trainer(conf)
     y_pred = t.make_predictions(test_loader)
-    print(y_pred)
     print("done")
     return y_pred
 
