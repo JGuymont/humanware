@@ -73,16 +73,16 @@ class SVHNDataset(Dataset):
             pickle_file = pkl.load(f)
         return pickle_file
 
-    def _crop(self, image, left, upper, right, lower):
+    def _crop(self, image, left, lower, right, upper):
         """
         Crop an Pil image arround the bounding box that contains all
         the digits and expand the box by 30%
 
         :param image: the image to crop
         :param left: left bound of the digits
-        :param upper: upper bound of the digits
-        :param right: right bound of the digits
         :param lower: lower bound of the digits
+        :param right: right bound of the digits
+        :param upper: upper bound of the digits
         :return: the image cropped
         """
         image = image.crop((
