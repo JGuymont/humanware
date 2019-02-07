@@ -182,17 +182,19 @@ class Trainer:
         txt_file.write("epoch {} loss {} \n".format(self.epoch, valid_loss))
         txt_file.close()
 
-    def make_predictions(self, x):
-        """
-        Function to compute a prediction on a batch.
-
-        :param x: the batch on which to predict.
-        :return: the prediction.
-        """
+    def make_predictions(self, dataloader):
+        final_predictions = []
         self.model.eval()
-        output = self.model(x)
-        pred = np.argmax(output.detach().cpu().numpy(), axis=1)
-        return pred
+        with torch.no_grad():
+            for (inputs, targets) in dataloader:
+                inputs = inputs.to(self.device)
+
+                outputs = self.model(inputs)
+                _, predicted = torch.max(outputs.data, 1)
+
+                final_predictions.append(predicted)
+
+        return final_predictions
 
     def save_checkpoint(self, accuracy):
         """
