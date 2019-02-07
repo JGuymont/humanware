@@ -23,4 +23,4 @@ cd "${PBS_O_WORKDIR}"
 #s_exec python main.py ./config/resnet01.ini
 # evaluation/run_evaluation.sh
 
-s_exec python evaluation/eval.py --dataset_dir=$DATA_DIR --results_dir=$RESULTS_DIR --metadata_filename=$METADATA_FILENAME
+s_exec python eval.py --dataset_dir=$DATA_DIR --results_dir=$RESULTS_DIR --metadata_filename=$METADATA_FILENAME
