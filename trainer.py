@@ -195,9 +195,9 @@ class Trainer:
                 outputs = self.model(inputs)
                 _, predicted = torch.max(outputs.data, 1)
 
-                final_predictions.append(predicted)
+                final_predictions.extend([i.item() for i in predicted.data])
 
-        return final_predictions
+        return np.array(final_predictions)
 
     def save_checkpoint(self, accuracy):
         """
