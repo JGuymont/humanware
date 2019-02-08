@@ -38,9 +38,15 @@ def tensor_to_image(tensor, save=None):
 
 def count_elements(seq) -> dict:
     """
+    Return the number of frequency of each element of a list
 
-    :param seq:
-    :return:
+    :param seq: list of int
+    :return: dictionary where the keys are category of 
+        element in the list `seq` and the values are 
+        the frequency
+
+    Example: Calling count_element([1, 1, 1, 2, 2]) would
+        return `{1: 3, 2: 2}`  
     """
     hist = {}
     for i in seq:
