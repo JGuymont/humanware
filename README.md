@@ -1,3 +1,5 @@
+link to the [overleaf report](https://v2.overleaf.com/7217951162xycmpqhgrpnt)
+
 # How to use
 
 1. Execute `python split_data.py` to split the training set metadata in 
