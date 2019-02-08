@@ -9,10 +9,10 @@ PROJECT_PATH='/rap/jvb-000-aa/COURS2019/etudiants/submissions/b1phut1/code/'
 RESULTS_DIR='/rap/jvb-000-aa/COURS2019/etudiants/submissions/b1phut1/code/results/'
 
 # DATA_DIR='/rap/jvb-000-aa/COURS2019/etudiants/ift6759/projects/humanware/data/SVHN/test_sample'
-DATA_DIR='/home/user54/digit-detection/data/SVHN/train/'
+DATA_DIR='/home/user40/Humanware-block1/data/SVHN/train/'
 
 # METADATA_FILENAME='/rap/jvb-000-aa/COURS2019/etudiants/ift6759/projects/humanware/data/SVHN/test_sample_metadata.pkl'
-METADATA_FILENAME='/home/user54/digit-detection/data/SVHN/train_metadata.pkl'
+METADATA_FILENAME='/home/user40/Humanware-block1/data/SVHN/metadata/test_metadata.pkl'
 
 cd $PROJECT_PATH/evaluation
 echo $PROJECT_PATH
