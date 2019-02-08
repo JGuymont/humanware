@@ -34,20 +34,18 @@ if __name__ == '__main__':
     conf = ConfigParser()
     conf.read(args.config)
     conf.set('model', 'device', 'cuda' if torch.cuda.is_available() else 'cpu')
-
+    input_resize = conf.getint("preprocessing", "resize")
     train_transforms = transforms.Compose([
         transforms.Resize((64, 64)),
         transforms.RandomCrop(54),
-        # Resize to input size for pretrained SENet
-        transforms.Resize((224, 224)),
+        transforms.Resize((input_resize, input_resize)),
         transforms.ToTensor(),
         transforms.Normalize([0.39954964, 0.3988817, 0.41280591],
                              [0.23269807, 0.2355513, 0.23580605])
     ])
 
     test_transforms = transforms.Compose([
-        # Resize to input size for pretrained SENet
-        transforms.Resize((224, 224)),
+        transforms.Resize((input_resize, input_resize)),
         transforms.ToTensor(),
         transforms.Normalize([0.39954964, 0.3988817, 0.41280591],
                              [0.23269807, 0.2355513, 0.23580605])
