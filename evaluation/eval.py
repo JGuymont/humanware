@@ -78,7 +78,7 @@ if __name__ == "__main__":
     # Put your group name here
     group_name = "b1phut1"
 
-    model_filename = '/rap/jvb-000-aa/COURS2019/etudiants/submissions/b1phut1/model/senet_model.pth'
+    model_filename = '/rap/jvb-000-aa/COURS2019/etudiants/submissions/b1phut1/model/best_model.pth'
     # model_filename should be the absolute path on shared disk to your
     # best model. You need to ensure that they are available to evaluators on
     # Helios.

@@ -25,6 +25,7 @@ class Trainer:
         """
         Instantiate all the attributes of the class,
         create an instance of the model and load a checkpoint if necessary.
+
         :param conf: configuration that will be used for the model.
         """
         self.model_conf = conf["model"]
@@ -128,6 +129,11 @@ class Trainer:
                                            round(time.time() - start_time)))
 
     def full_train_model(self, train_loader):
+        """
+        Function to train on the whole dataset
+
+        :param train_loader: data loader providing the data
+        """
         start_time = time.time()
         for self.epoch in range(self.epoch, self.epochs):
             self.model.train()
@@ -242,7 +248,6 @@ class Trainer:
 
     def make_predictions(self, dataloader):
         final_predictions = []
-        final_targets = []
         self.model.eval()
         with torch.no_grad():
             for (inputs, targets) in dataloader:
@@ -252,9 +257,8 @@ class Trainer:
                 _, predicted = torch.max(outputs.data, 1)
 
                 final_predictions.extend([i.item() for i in predicted.data])
-                final_targets.extend([i.item() for i in targets.data])
 
-        return np.array(final_predictions), np.array(final_targets)
+        return np.array(final_predictions)
 
     def save_checkpoint(self, accuracy = None):
         """

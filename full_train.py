@@ -1,5 +1,5 @@
 """
-Starting point for training the models
+Starting point for training the models on the whole dataset
 """
 import os
 import argparse
