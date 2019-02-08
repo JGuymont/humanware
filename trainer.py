@@ -25,6 +25,7 @@ class Trainer:
         """
         Instantiate all the attributes of the class,
         create an instance of the model and load a checkpoint if necessary.
+
         :param conf: configuration that will be used for the model.
         """
         self.model_conf = conf["model"]
@@ -128,6 +129,11 @@ class Trainer:
                                            round(time.time() - start_time)))
 
     def full_train_model(self, train_loader):
+        """
+        Function to train on the whole dataset
+
+        :param train_loader: data loader providing the data
+        """
         start_time = time.time()
         for self.epoch in range(self.epoch, self.epochs):
             self.model.train()
