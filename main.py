@@ -25,31 +25,6 @@ def argparser():
         description='Split metadata into train/valid/test'
     )
     parser.add_argument('config', type=str)
-    parser.add_argument('--train_metadata_path',
-                        type=str,
-                        default='./data/SVHN/metadata/train_metadata.pkl')
-    parser.add_argument('--valid_metadata_path',
-                        type=str,
-                        default='./data/SVHN/metadata/valid_metadata.pkl')
-    parser.add_argument('--test_metadata_path',
-                        type=str,
-                        default='./data/SVHN/metadata/test_metadata.pkl')
-    parser.add_argument('--data_dir', type=str, default='./data/SVHN/train')
-    parser.add_argument('--train_pct', type=float, default=0.7)
-    parser.add_argument('--valid_pct', type=float, default=0.2)
-    parser.add_argument('--test_pct', type=float, default=0.1)
-
-    parser.add_argument('--model',
-                        type=str,
-                        choices=['SmallCNN', 'MediumCNN', 'LargeCNN',
-                                 'ResNet'])
-    parser.add_argument('--num_classes', type=int, default=5)
-    parser.add_argument('--n_epochs', type=int, default=100)
-    parser.add_argument('--batch_size', type=int, default=128)
-    parser.add_argument('--learning_rate', type=float, default=0.001)
-    parser.add_argument('--crop_percent', type=float, default=0.3)
-    parser.add_argument('--optim', type=str, default='SGD')
-    parser.add_argument('--device', type=str, default='cpu')
 
     return parser.parse_args()
 
