@@ -21,9 +21,7 @@ def argparser():
     :return: the arguments parsed
     """
     """Command line argument parser"""
-    parser = argparse.ArgumentParser(
-        description='Split metadata into train/valid/test'
-    )
+    parser = argparse.ArgumentParser()
     parser.add_argument('config', type=str)
 
     return parser.parse_args()
